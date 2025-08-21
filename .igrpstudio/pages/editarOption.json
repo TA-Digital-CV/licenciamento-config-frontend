@@ -1,0 +1,1 @@
+{"type":"page","pageName":"editarOption","path":"(options)/options/(options)/options/[id]/editar","description":"Editar Option","forceDynamic":false,"id":"6qd5wlbl1w","types":[],"states":[],"functions":[],"parentName":"optionsConfig","args":[{"id":"jml8p1szby","type":"string","name":"id","isList":false,"isOptional":false,"isInterface":false,"isFunction":false,"isState":false}]}
