@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, use } from 'react';
 import Link from 'next/link';
 import { IGRPForm, IGRPInputNumber, IGRPSelect, IGRPSwitch, IGRPTextarea, useIGRPToast, IGRPInputText } from '@igrp/igrp-framework-react-design-system';
 import LegislationFilters from '@/components/dossier/LegislationFilters';
@@ -77,8 +77,8 @@ const feeSchema = z.object({
   active: z.boolean().default(true),
 });
 
-export default function PageDossierLicenceTypeComponent({ params } : { params: { id: string } } ) {
-  const { id } = params;
+export default function PageDossierLicenceTypeComponent({ params } : { params: Promise<{ id: string }> } ) {
+  const { id } = use(params);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [licenceType, setLicenceType] = useState<any>(null);

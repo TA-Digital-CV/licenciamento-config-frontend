@@ -6,12 +6,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// removed unused import of use
+import { use } from 'react';
 import Link from 'next/link';
 import LicenceTypeForm from '@/components/licencetypeform';
 
-export default function PageEditarLicenceTypeComponent({ params } : { params: { id: string } } ) {
-  const { id } = params;
+export default function PageEditarLicenceTypeComponent({ params } : { params: Promise<{ id: string }> } ) {
+  const { id } = use(params);
 
   return (
     <div className="flex flex-col gap-6">

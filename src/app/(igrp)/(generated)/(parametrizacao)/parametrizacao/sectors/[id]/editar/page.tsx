@@ -6,12 +6,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// removed unused import of use
+import { use } from 'react';
 import Link from 'next/link';
 import SectorForm from '@/components/sectorform';
 
-export default function PageEditarSectorComponent({ params } : { params: { id: string } } ) {
-  const { id } = params;
+export default function PageEditarSectorComponent({ params } : { params: Promise<{ id: string }> } ) {
+  const { id } = use(params);
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
