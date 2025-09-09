@@ -11,7 +11,8 @@ type Props = {
 };
 
 export default function FeeList({ fees, feeTypeOptions, onEdit, onDelete }: Props) {
-  const labelFor = (value: string) => feeTypeOptions.find((o) => o.value === value)?.label || value || '';
+  const labelFor = (value: string) =>
+    feeTypeOptions.find((o) => o.value === value)?.label || value || '';
 
   return (
     <div className="overflow-x-auto">
@@ -27,7 +28,9 @@ export default function FeeList({ fees, feeTypeOptions, onEdit, onDelete }: Prop
         <tbody>
           {fees.length === 0 ? (
             <tr>
-              <td colSpan={4} className="py-4 text-muted-foreground">Nenhuma taxa configurada.</td>
+              <td colSpan={4} className="py-4 text-muted-foreground">
+                Nenhuma taxa configurada.
+              </td>
             </tr>
           ) : (
             fees.map((f, idx) => (
@@ -35,16 +38,26 @@ export default function FeeList({ fees, feeTypeOptions, onEdit, onDelete }: Prop
                 <td className="py-2 pr-3">{labelFor(f.feeType)}</td>
                 <td className="py-2 pr-3">{typeof f.amount === 'number' ? f.amount : ''}</td>
                 <td className="py-2 pr-3">
-                  <span className={`px-2 py-1 rounded text-xs ${f.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${f.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                  >
                     {f.active ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
                 <td className="py-2 pr-3">
                   <div className="flex gap-2">
-                    <button type="button" className="text-blue-600 hover:underline" onClick={() => onEdit(idx)}>
+                    <button
+                      type="button"
+                      className="text-blue-600 hover:underline"
+                      onClick={() => onEdit(idx)}
+                    >
                       Editar
                     </button>
-                    <button type="button" className="text-red-600 hover:underline" onClick={() => onDelete(idx)}>
+                    <button
+                      type="button"
+                      className="text-red-600 hover:underline"
+                      onClick={() => onDelete(idx)}
+                    >
                       Remover
                     </button>
                   </div>

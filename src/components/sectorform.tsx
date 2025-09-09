@@ -1,9 +1,8 @@
-'use client'
+'use client';
 
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY iGRP STUDIO. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useRef, useState } from 'react';
@@ -18,22 +17,32 @@ import {
   useIGRPToast,
 } from '@igrp/igrp-framework-react-design-system';
 import { useRouter } from 'next/navigation';
+import { loadActiveOptionsByCode, transformOptionsToSelectItems } from '@/app/(myapp)/functions/api.functions';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   description: z.string().optional().default(''),
   code: z.string().min(1, 'Código é obrigatório'),
-  sectorTypeKey: z.enum(['PRIMARY','SECONDARY','TERTIARY'], { required_error: 'Tipo de setor é obrigatório' }),
+  // Antes era um enum estático; agora é dinâmico, então validamos como string obrigatória
+  sectorTypeKey: z.string().min(1, 'Tipo de setor é obrigatório'),
   sortOrder: z.coerce.number().int().optional(),
   active: z.boolean().default(true),
   metadata: z.string().optional().default(''),
 });
 
-export default function SectorForm({ id } : { id?: string }) {
+export default function SectorForm({ id }: { id?: string }) {
   const formRef = useRef<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [initialValues, setInitialValues] = useState<any>({ name: '', description: '', code: '', sectorTypeKey: '', sortOrder: undefined, active: true, metadata: '' });
+  const [initialValues, setInitialValues] = useState<any>({
+    name: '',
+    description: '',
+    code: '',
+    sectorTypeKey: '',
+    sortOrder: undefined,
+    active: true,
+    metadata: '',
+  });
   const router = useRouter();
   const { igrpToast } = useIGRPToast();
 
@@ -53,18 +62,25 @@ export default function SectorForm({ id } : { id?: string }) {
           sectorTypeKey: data.sectorType?.key ?? data.sectorTypeKey ?? '',
           sortOrder: data.sortOrder ?? undefined,
           active: data.active !== false,
-          metadata: typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
+          metadata:
+            typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
         };
         if (mounted) setInitialValues(mapped);
       } catch (e: any) {
         console.error(e);
-        igrpToast({ title: 'Erro', description: e?.message || 'Falha ao carregar setor', type: 'default' });
+        igrpToast({
+          title: 'Erro',
+          description: e?.message || 'Falha ao carregar setor',
+          type: 'default',
+        });
       } finally {
         setLoading(false);
       }
     }
     load();
-    return () => { mounted = false };
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -77,14 +93,28 @@ export default function SectorForm({ id } : { id?: string }) {
         sectorTypeKey: values.sectorTypeKey,
         sortOrder: values.sortOrder,
         active: values.active !== false,
-        metadata: (() => { try { return values.metadata ? JSON.parse(values.metadata) : null; } catch { return values.metadata || null; } })(),
+        metadata: (() => {
+          try {
+            return values.metadata ? JSON.parse(values.metadata) : null;
+          } catch {
+            return values.metadata || null;
+          }
+        })(),
       };
 
       if (!id) {
-        const res = await fetch('/api/sectors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch('/api/sectors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
         if (!res.ok) throw new Error('Falha ao criar setor');
       } else {
-        const res = await fetch(`/api/sectors/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch(`/api/sectors/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
         if (!res.ok) throw new Error('Falha ao atualizar setor');
       }
 
@@ -100,14 +130,44 @@ export default function SectorForm({ id } : { id?: string }) {
 
   const actionsDisabled = loading || submitting;
   const isEditing = Boolean(id);
-  const sectorTypeOptions = [
-    { value: 'PRIMARY', label: 'Sector Primário' },
-    { value: 'SECONDARY', label: 'Sector Secundário' },
-    { value: 'TERTIARY', label: 'Sector Terciário' },
-  ];
+  const [sectorTypeOptions, setSectorTypeOptions] = useState<{ value: string; label: string }[]>([]);
+  useEffect(() => {
+    let active = true;
+    async function loadSectorTypes() {
+      try {
+        let data = await loadActiveOptionsByCode('SECTOR_TYPES');
+        if (!Array.isArray(data) || data.length === 0) {
+          data = await loadActiveOptionsByCode('SECTOR_TYPE');
+        }
+        const mapped = transformOptionsToSelectItems(data);
+        if (active) setSectorTypeOptions(mapped);
+      } catch (e) {
+        console.warn('Falha ao carregar tipos de setor da API, usando opções padrão.', e);
+        if (active)
+          setSectorTypeOptions([
+            { value: 'PRIMARY', label: 'Sector Primário' },
+            { value: 'SECONDARY', label: 'Sector Secundário' },
+            { value: 'TERTIARY', label: 'Sector Terciário' },
+          ]);
+      }
+    }
+    loadSectorTypes();
+    return () => {
+      active = false;
+    };
+  }, []);
+  // Removido array hardcoded; agora usa-se o estado sectorTypeOptions
 
   return (
-    <div className="space-y-4">
+    <div
+      className="space-y-4"
+      onKeyDownCapture={(e) => {
+        const tag = (e.target as HTMLElement).tagName;
+        if (e.key === 'Enter' && (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA')) {
+          e.preventDefault();
+        }
+      }}
+    >
       <IGRPForm
         schema={formSchema}
         defaultValues={initialValues}
@@ -121,10 +181,10 @@ export default function SectorForm({ id } : { id?: string }) {
       >
         <IGRPInputText name="name" label="Nome" required />
         <IGRPInputText name="code" label="Código" required disabled={isEditing} />
-        <IGRPSelect 
-          name="sectorTypeKey" 
-          label="Tipo de Setor" 
-          required 
+        <IGRPSelect
+          name="sectorTypeKey"
+          label="Tipo de Setor"
+          required
           placeholder="Selecione o tipo de setor"
           options={sectorTypeOptions}
         />
@@ -135,7 +195,8 @@ export default function SectorForm({ id } : { id?: string }) {
 
         <div className="flex items-center gap-2 md:col-span-2">
           <button
-            type="submit"
+            type="button"
+            onClick={() => formRef.current?.submit()}
             disabled={actionsDisabled}
             aria-busy={submitting}
             className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50 disabled:pointer-events-none"

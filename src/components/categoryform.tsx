@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY iGRP STUDIO. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
@@ -30,11 +30,20 @@ const formSchema = z.object({
   metadata: z.string().optional().default(''),
 });
 
-export default function CategoryForm({ id } : { id?: string }) {
+export default function CategoryForm({ id }: { id?: string }) {
   const formRef = useRef<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  const [initialValues, setInitialValues] = useState<any>({ name: '', description: '', code: '', sectorId: '', parentCategoryId: undefined, sortOrder: undefined, active: true, metadata: '' });
+  const [initialValues, setInitialValues] = useState<any>({
+    name: '',
+    description: '',
+    code: '',
+    sectorId: '',
+    parentCategoryId: undefined,
+    sortOrder: undefined,
+    active: true,
+    metadata: '',
+  });
   const [sectorOptions, setSectorOptions] = useState<{ value: string; label: string }[]>([]);
   const router = useRouter();
   const { igrpToast } = useIGRPToast();
@@ -70,18 +79,25 @@ export default function CategoryForm({ id } : { id?: string }) {
           parentCategoryId: data.parentCategoryId ?? undefined,
           sortOrder: data.sortOrder ?? undefined,
           active: data.active !== false,
-          metadata: typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
+          metadata:
+            typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
         };
         if (mounted) setInitialValues(mapped);
       } catch (e: any) {
         console.error(e);
-        igrpToast({ title: 'Erro', description: e?.message || 'Falha ao carregar categoria', type: 'default' });
+        igrpToast({
+          title: 'Erro',
+          description: e?.message || 'Falha ao carregar categoria',
+          type: 'default',
+        });
       } finally {
         setLoading(false);
       }
     }
     load();
-    return () => { mounted = false };
+    return () => {
+      mounted = false;
+    };
   }, [id]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -95,18 +111,36 @@ export default function CategoryForm({ id } : { id?: string }) {
         parentCategoryId: values.parentCategoryId,
         sortOrder: values.sortOrder,
         active: values.active !== false,
-        metadata: (() => { try { return values.metadata ? JSON.parse(values.metadata) : null; } catch { return values.metadata || null; } })(),
+        metadata: (() => {
+          try {
+            return values.metadata ? JSON.parse(values.metadata) : null;
+          } catch {
+            return values.metadata || null;
+          }
+        })(),
       };
 
       if (!id) {
-        const res = await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
         if (!res.ok) throw new Error('Falha ao criar categoria');
       } else {
-        const res = await fetch(`/api/categories/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const res = await fetch(`/api/categories/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
         if (!res.ok) throw new Error('Falha ao atualizar categoria');
       }
 
-      igrpToast({ title: 'Sucesso', description: 'Categoria guardada com sucesso', type: 'default' });
+      igrpToast({
+        title: 'Sucesso',
+        description: 'Categoria guardada com sucesso',
+        type: 'default',
+      });
       router.push('/parametrizacao');
     } catch (e: any) {
       console.error(e);
@@ -120,7 +154,15 @@ export default function CategoryForm({ id } : { id?: string }) {
   const isEditing = Boolean(id);
 
   return (
-    <div className="space-y-4">
+    <div
+      className="space-y-4"
+      onKeyDownCapture={(e) => {
+        const tag = (e.target as HTMLElement).tagName;
+        if (e.key === 'Enter' && (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA')) {
+          e.preventDefault();
+        }
+      }}
+    >
       <IGRPForm
         schema={formSchema}
         defaultValues={initialValues}
@@ -134,10 +176,10 @@ export default function CategoryForm({ id } : { id?: string }) {
       >
         <IGRPInputText name="name" label="Nome" required />
         <IGRPInputText name="code" label="Código" required disabled={isEditing} />
-        <IGRPSelect 
-          name="sectorId" 
-          label="Setor" 
-          required 
+        <IGRPSelect
+          name="sectorId"
+          label="Setor"
+          required
           placeholder="Selecione um setor"
           options={sectorOptions}
         />
@@ -149,7 +191,8 @@ export default function CategoryForm({ id } : { id?: string }) {
 
         <div className="flex items-center gap-2 md:col-span-2">
           <button
-            type="submit"
+            type="button"
+            onClick={() => formRef.current?.submit()}
             disabled={actionsDisabled}
             aria-busy={submitting}
             className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50 disabled:pointer-events-none"

@@ -10,7 +10,7 @@ export interface FeeCategoryRecord {
   level: number;
   sortOrder: number;
   active: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -50,7 +50,7 @@ export interface ProcessTypeFeeRecord {
   legalBasis?: string;
   observations?: string;
   active: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -67,10 +67,10 @@ export const mockFeeCategories: FeeCategoryRecord[] = [
     level: 1,
     sortOrder: 1,
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'system',
-    updatedBy: 'system'
+    updatedBy: 'system',
   },
   {
     id: 'fc-002',
@@ -81,10 +81,10 @@ export const mockFeeCategories: FeeCategoryRecord[] = [
     level: 2,
     sortOrder: 1,
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'system',
-    updatedBy: 'system'
+    updatedBy: 'system',
   },
   {
     id: 'fc-003',
@@ -94,10 +94,10 @@ export const mockFeeCategories: FeeCategoryRecord[] = [
     level: 1,
     sortOrder: 2,
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'system',
-    updatedBy: 'system'
+    updatedBy: 'system',
   },
   {
     id: 'fc-004',
@@ -108,10 +108,10 @@ export const mockFeeCategories: FeeCategoryRecord[] = [
     level: 2,
     sortOrder: 1,
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'system',
-    updatedBy: 'system'
+    updatedBy: 'system',
   },
   {
     id: 'fc-005',
@@ -121,11 +121,11 @@ export const mockFeeCategories: FeeCategoryRecord[] = [
     level: 1,
     sortOrder: 3,
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'system',
-    updatedBy: 'system'
-  }
+    updatedBy: 'system',
+  },
 ];
 
 // Mock Process Type Fees
@@ -149,13 +149,13 @@ export const mockProcessTypeFees: ProcessTypeFeeRecord[] = [
     penaltyRate: 2.5,
     status: 'ATIVO',
     priority: 'ALTA',
-    effectiveDate: '2024-01-01T00:00:00Z',
-    legalBasis: 'Decreto-Lei nº 123/2024',
+    effectiveDate: '2025-01-01T00:00:00Z',
+    legalBasis: 'Decreto-Lei nº 123/2025',
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: 'ptf-002',
@@ -181,14 +181,14 @@ export const mockProcessTypeFees: ProcessTypeFeeRecord[] = [
     discountConditions: 'Pagamento antecipado em 15 dias',
     status: 'ATIVO',
     priority: 'ALTA',
-    effectiveDate: '2024-01-01T00:00:00Z',
-    legalBasis: 'Portaria nº 456/2024',
+    effectiveDate: '2025-01-01T00:00:00Z',
+    legalBasis: 'Portaria nº 456/2025',
     observations: 'Taxa varia conforme complexidade da vistoria',
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-02-01T10:30:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-02-01T10:30:00Z',
     createdBy: 'admin',
-    updatedBy: 'supervisor'
+    updatedBy: 'supervisor',
   },
   {
     id: 'ptf-003',
@@ -208,20 +208,20 @@ export const mockProcessTypeFees: ProcessTypeFeeRecord[] = [
     isRequired: true,
     isRefundable: false,
     paymentTiming: 'POSTERIOR',
-    dueDate: '2024-12-31T23:59:59Z',
+    dueDate: '2025-12-31T23:59:59Z',
     gracePeriodDays: 45,
     penaltyRate: 1.5,
     exemptionCriteria: 'Empresas com menos de 5 funcionários',
     status: 'ATIVO',
     priority: 'MEDIA',
-    effectiveDate: '2024-01-01T00:00:00Z',
-    expirationDate: '2024-12-31T23:59:59Z',
-    legalBasis: 'Lei nº 789/2024',
+    effectiveDate: '2025-01-01T00:00:00Z',
+    expirationDate: '2025-12-31T23:59:59Z',
+    legalBasis: 'Lei nº 789/2025',
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: 'ptf-004',
@@ -244,13 +244,13 @@ export const mockProcessTypeFees: ProcessTypeFeeRecord[] = [
     discountConditions: 'Renovação antecipada (30 dias antes do vencimento)',
     status: 'ATIVO',
     priority: 'MEDIA',
-    effectiveDate: '2024-01-01T00:00:00Z',
-    legalBasis: 'Decreto-Lei nº 123/2024',
+    effectiveDate: '2025-01-01T00:00:00Z',
+    legalBasis: 'Decreto-Lei nº 123/2025',
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: 'ptf-005',
@@ -271,13 +271,13 @@ export const mockProcessTypeFees: ProcessTypeFeeRecord[] = [
     penaltyRate: 5.0,
     status: 'ATIVO',
     priority: 'BAIXA',
-    effectiveDate: '2024-01-01T00:00:00Z',
-    legalBasis: 'Portaria nº 789/2024',
+    effectiveDate: '2025-01-01T00:00:00Z',
+    legalBasis: 'Portaria nº 789/2025',
     observations: 'Aplicável apenas para processos urgentes',
     active: true,
-    createdAt: '2024-01-15T08:00:00Z',
-    updatedAt: '2024-01-15T08:00:00Z',
+    createdAt: '2025-01-15T08:00:00Z',
+    updatedAt: '2025-01-15T08:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
-  }
+    updatedBy: 'admin',
+  },
 ];

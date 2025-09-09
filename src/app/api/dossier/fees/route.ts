@@ -5,12 +5,12 @@ import { mockProcessTypeFees, mockFeeCategories, ProcessTypeFeeRecord } from './
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
     // Pagination parameters
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
-    
+
     // Filter parameters
     const processTypeId = searchParams.get('processTypeId');
     const feeId = searchParams.get('feeId');
@@ -25,13 +25,13 @@ export async function GET(request: NextRequest) {
     const currency = searchParams.get('currency');
     const active = searchParams.get('active');
     const search = searchParams.get('search');
-    
+
     // Sorting parameters
     const sortBy = searchParams.get('sortBy') || 'priority';
     const sortOrder = searchParams.get('sortOrder') || 'asc';
-    
+
     // Filter data
-    let filteredFees = mockProcessTypeFees.filter(fee => {
+    const filteredFees = mockProcessTypeFees.filter((fee) => {
       if (processTypeId && fee.processTypeId !== processTypeId) return false;
       if (feeId && fee.feeId !== feeId) return false;
       if (feeCategoryId && fee.feeCategoryId !== feeCategoryId) return false;
@@ -56,15 +56,15 @@ export async function GET(request: NextRequest) {
       }
       return true;
     });
-    
+
     // Sort data
     filteredFees.sort((a, b) => {
-      let aValue: any = a[sortBy as keyof ProcessTypeFeeRecord];
-      let bValue: any = b[sortBy as keyof ProcessTypeFeeRecord];
-      
+      let aValue: string | number = a[sortBy as keyof ProcessTypeFeeRecord] as string | number;
+      let bValue: string | number = b[sortBy as keyof ProcessTypeFeeRecord] as string | number;
+
       // Handle special sorting cases
       if (sortBy === 'priority') {
-        const priorityOrder = { 'ALTA': 3, 'MEDIA': 2, 'BAIXA': 1 };
+        const priorityOrder = { ALTA: 3, MEDIA: 2, BAIXA: 1 };
         aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
         bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
       } else if (sortBy === 'amount') {
@@ -74,30 +74,30 @@ export async function GET(request: NextRequest) {
         aValue = new Date(a.effectiveDate).getTime();
         bValue = new Date(b.effectiveDate).getTime();
       }
-      
-      if (typeof aValue === 'string') {
+
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
         aValue = aValue.toLowerCase();
         bValue = bValue.toLowerCase();
       }
-      
+
       if (sortOrder === 'desc') {
         return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
       } else {
         return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       }
     });
-    
+
     // Apply pagination
     const total = filteredFees.length;
     const paginatedFees = filteredFees.slice(offset, offset + limit);
-    
+
     return NextResponse.json({
       data: paginatedFees,
       pagination: {
         page,
         limit,
         total,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit),
       },
       filters: {
         processTypeId,
@@ -112,15 +112,12 @@ export async function GET(request: NextRequest) {
         isRefundable,
         currency,
         active,
-        search
-      }
+        search,
+      },
     });
   } catch (error) {
     console.error('Error fetching process type fees:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -128,7 +125,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate required fields
     const requiredFields = [
       'processTypeId',
@@ -141,18 +138,15 @@ export async function POST(request: NextRequest) {
       'paymentTiming',
       'status',
       'priority',
-      'effectiveDate'
+      'effectiveDate',
     ];
-    
+
     for (const field of requiredFields) {
       if (!body[field]) {
-        return NextResponse.json(
-          { error: `Missing required field: ${field}` },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
       }
     }
-    
+
     // Validate enum values
     const validCurrencies = ['CVE', 'EUR', 'USD'];
     const validFeeTypes = ['FIXO', 'PERCENTUAL', 'VARIAVEL', 'CONDICIONAL'];
@@ -160,88 +154,87 @@ export async function POST(request: NextRequest) {
     const validPaymentTimings = ['ANTECIPADO', 'POSTERIOR', 'PARCELADO', 'CONDICIONAL'];
     const validStatuses = ['ATIVO', 'INATIVO', 'SUSPENSO', 'EM_REVISAO'];
     const validPriorities = ['ALTA', 'MEDIA', 'BAIXA'];
-    
+
     if (!validCurrencies.includes(body.currency)) {
       return NextResponse.json(
         { error: `Invalid currency. Must be one of: ${validCurrencies.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     if (!validFeeTypes.includes(body.feeType)) {
       return NextResponse.json(
         { error: `Invalid feeType. Must be one of: ${validFeeTypes.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     if (!validCalculationMethods.includes(body.calculationMethod)) {
       return NextResponse.json(
-        { error: `Invalid calculationMethod. Must be one of: ${validCalculationMethods.join(', ')}` },
-        { status: 400 }
+        {
+          error: `Invalid calculationMethod. Must be one of: ${validCalculationMethods.join(', ')}`,
+        },
+        { status: 400 },
       );
     }
-    
+
     if (!validPaymentTimings.includes(body.paymentTiming)) {
       return NextResponse.json(
         { error: `Invalid paymentTiming. Must be one of: ${validPaymentTimings.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     if (!validStatuses.includes(body.status)) {
       return NextResponse.json(
         { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     if (!validPriorities.includes(body.priority)) {
       return NextResponse.json(
         { error: `Invalid priority. Must be one of: ${validPriorities.join(', ')}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // Validate numeric fields
     if (typeof body.amount !== 'number' || body.amount < 0) {
-      return NextResponse.json(
-        { error: 'Amount must be a positive number' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Amount must be a positive number' }, { status: 400 });
     }
-    
+
     // Validate percentage for PERCENTUAL fee type
-    if (body.feeType === 'PERCENTUAL' && (!body.percentage || body.percentage <= 0 || body.percentage > 100)) {
+    if (
+      body.feeType === 'PERCENTUAL' &&
+      (!body.percentage || body.percentage <= 0 || body.percentage > 100)
+    ) {
       return NextResponse.json(
         { error: 'Percentage must be provided and between 0 and 100 for PERCENTUAL fee type' },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
+
     // Check for duplicate association
-    const existingFee = mockProcessTypeFees.find(fee => 
-      fee.processTypeId === body.processTypeId &&
-      fee.feeId === body.feeId &&
-      fee.active
+    const existingFee = mockProcessTypeFees.find(
+      (fee) => fee.processTypeId === body.processTypeId && fee.feeId === body.feeId && fee.active,
     );
-    
+
     if (existingFee) {
       return NextResponse.json(
         { error: 'An active fee association between this process type and fee already exists' },
-        { status: 409 }
+        { status: 409 },
       );
     }
-    
+
     // Validate fee category exists
-    const feeCategory = mockFeeCategories.find(cat => cat.id === body.feeCategoryId && cat.active);
+    const feeCategory = mockFeeCategories.find(
+      (cat) => cat.id === body.feeCategoryId && cat.active,
+    );
     if (!feeCategory) {
-      return NextResponse.json(
-        { error: 'Invalid fee category ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid fee category ID' }, { status: 400 });
     }
-    
+
     // Create new process type fee
     const newFee: ProcessTypeFeeRecord = {
       id: `ptf-${Date.now()}`,
@@ -279,17 +272,14 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: body.createdBy || 'system',
-      updatedBy: body.updatedBy || 'system'
+      updatedBy: body.updatedBy || 'system',
     };
-    
+
     mockProcessTypeFees.push(newFee);
-    
+
     return NextResponse.json(newFee, { status: 201 });
   } catch (error) {
     console.error('Error creating process type fee:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

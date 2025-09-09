@@ -1,45 +1,130 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { mockLicenceTypes } from './_data';
+import { apiClient, ApiResponse } from '../../(myapp)/lib/api-client';
+import {
+  LicenseTypeResponseDTO,
+  LicenseTypeRequestDTO,
+} from '@/app/(myapp)/types/licence-types.types';
 
-// GET /api/(myapp)/(mockapi)/licence-types
+// GET /api/licence-types
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const active = searchParams.get('active');
-  const categoryId = searchParams.get('categoryId');
+  try {
+    const { searchParams } = new URL(request.url);
+    const params: Record<string, string> = {};
 
-  let list = [...mockLicenceTypes];
-  if (active != null) {
-    const wantActive = active === 'true';
-    list = list.filter(s => (s.active === wantActive));
+    // Map query parameters
+    if (searchParams.get('active') !== null) {
+      params.active = searchParams.get('active')!;
+    }
+    if (searchParams.get('categoryId')) {
+      params.categoryId = searchParams.get('categoryId')!;
+    }
+    if (searchParams.get('sectorId')) {
+      params.sectorId = searchParams.get('sectorId')!;
+    }
+    if (searchParams.get('page')) {
+      params.page = searchParams.get('page')!;
+    }
+    if (searchParams.get('size')) {
+      params.size = searchParams.get('size')!;
+    }
+
+    const response = await apiClient.get<ApiResponse<LicenseTypeResponseDTO>>(
+      '/license-types',
+      params,
+    );
+
+    const transformedLicenseTypes = response.content.map((licenseType: LicenseTypeResponseDTO) => ({
+      id: licenseType.id,
+      name: licenseType.name,
+      description: licenseType.description,
+      code: licenseType.code,
+      active: true,
+      sortOrder: 0,
+      categoryId: licenseType.categoryId,
+      licensingModel: licenseType.licensingModelKey,
+      validityPeriod: licenseType.validityPeriod,
+      validityUnit: licenseType.validityUnitKey,
+      renewable: licenseType.renewable,
+      autoRenewal: licenseType.autoRenewal,
+      requiresInspection: licenseType.requiresInspection,
+      requiresPublicConsultation: licenseType.requiresPublicConsultation,
+      maxProcessingDays: licenseType.maxProcessingDays,
+      hasFees: licenseType.hasFees,
+      baseFee: licenseType.baseFee,
+      currencyCode: licenseType.currencyCode,
+      metadata: licenseType.metadata,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    return NextResponse.json({
+      content: transformedLicenseTypes,
+      total: response.total,
+    });
+  } catch (error) {
+    console.error('Error fetching license types:', error);
+    return NextResponse.json({ message: 'Failed to fetch license types' }, { status: 500 });
   }
-  if (categoryId) {
-    list = list.filter(s => s.categoryId === categoryId);
-  }
-
-  list.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || a.name.localeCompare(b.name));
-
-  return NextResponse.json({ content: list, total: list.length });
 }
 
-// POST /api/(myapp)/(mockapi)/licence-types
+// POST /api/licence-types
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const newItem = {
-    id: `${Date.now()}`,
-    name: body.name,
-    description: body.description || '',
-    code: body.code,
-    categoryId: body.categoryId || undefined,
-    categoryName: body.categoryName || undefined,
-    active: body.active !== false,
-    sortOrder: body.sortOrder ?? (mockLicenceTypes.length + 1),
-    metadata: body.metadata ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  } as any;
-  mockLicenceTypes.push(newItem);
-  return NextResponse.json(newItem, { status: 201 });
+  try {
+    const body = await request.json();
+
+    const licenseTypeData: LicenseTypeRequestDTO = {
+      name: body.name,
+      description: body.description || undefined,
+      code: body.code,
+      licensingModelKey: body.licensingModelKey,
+      validityPeriod: body.validityPeriod || undefined,
+      validityUnitKey: body.validityUnitKey || undefined,
+      renewable: body.renewable !== false,
+      autoRenewal: body.autoRenewal === true,
+      requiresInspection: body.requiresInspection === true,
+      requiresPublicConsultation: body.requiresPublicConsultation === true,
+      maxProcessingDays: body.maxProcessingDays || undefined,
+      hasFees: body.hasFees === true,
+      baseFee: body.baseFee || undefined,
+      currencyCode: body.currencyCode || undefined,
+      active: body.active !== false,
+      sortOrder: body.sortOrder || undefined,
+      metadata: body.metadata || undefined,
+      categoryId: body.categoryId,
+    };
+
+    const response = await apiClient.post<LicenseTypeResponseDTO>(
+      '/license-types',
+      licenseTypeData,
+    );
+
+    const transformedLicenseType = {
+      id: response.id,
+      name: response.name,
+      description: response.description,
+      code: response.code,
+      active: true,
+      sortOrder: 0,
+      categoryId: response.categoryId,
+      licensingModel: response.licensingModelKey,
+      validityPeriod: response.validityPeriod,
+      validityUnit: response.validityUnitKey,
+      renewable: response.renewable,
+      autoRenewal: response.autoRenewal,
+      requiresInspection: response.requiresInspection,
+      requiresPublicConsultation: response.requiresPublicConsultation,
+      maxProcessingDays: response.maxProcessingDays,
+      hasFees: response.hasFees,
+      baseFee: response.baseFee,
+      currencyCode: response.currencyCode,
+      metadata: response.metadata,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return NextResponse.json(transformedLicenseType, { status: 201 });
+  } catch (error) {
+    console.error('Error creating license type:', error);
+    return NextResponse.json({ message: 'Failed to create license type' }, { status: 500 });
+  }
 }

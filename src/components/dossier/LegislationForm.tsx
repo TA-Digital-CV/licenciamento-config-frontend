@@ -1,8 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { IGRPForm, IGRPInputText, IGRPSelect, IGRPTextarea } from '@igrp/igrp-framework-react-design-system';
+import {
+  IGRPForm,
+  IGRPInputText,
+  IGRPSelect,
+  IGRPTextarea,
+} from '@igrp/igrp-framework-react-design-system';
 
 type Option = { value: string; label: string };
 
@@ -37,7 +41,11 @@ export default function LegislationForm({
     // Garantir que o URL existente (edição) respeita o schema (URL absoluto)
     const current = editingInitial?.documentUrl as string | undefined;
     if (current && formRef.current?.setValue) {
-      const absolute = current.startsWith('http') ? current : (typeof window !== 'undefined' ? new URL(current, window.location.origin).toString() : current);
+      const absolute = current.startsWith('http')
+        ? current
+        : typeof window !== 'undefined'
+          ? new URL(current, window.location.origin).toString()
+          : current;
       formRef.current.setValue('documentUrl', absolute, { shouldDirty: false });
     }
   }, [editingInitial?.documentUrl]);
@@ -57,11 +65,15 @@ export default function LegislationForm({
       }
       const data = await res.json();
       const returned = (data?.url as string) || '';
-      const absolute = typeof window !== 'undefined' && returned
-        ? new URL(returned, window.location.origin).toString()
-        : returned;
+      const absolute =
+        typeof window !== 'undefined' && returned
+          ? new URL(returned, window.location.origin).toString()
+          : returned;
       if (absolute && formRef.current?.setValue) {
-        formRef.current.setValue('documentUrl', absolute, { shouldValidate: true, shouldDirty: true });
+        formRef.current.setValue('documentUrl', absolute, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
       }
     } catch (err: any) {
       setUploadError(err?.message || 'Erro no upload');
@@ -74,7 +86,9 @@ export default function LegislationForm({
 
   return (
     <div className="mt-6 rounded border p-4 bg-background">
-      <h4 className="font-medium mb-3">{editingIndex >= 0 ? 'Editar Legislação' : 'Nova Legislação'}</h4>
+      <h4 className="font-medium mb-3">
+        {editingIndex >= 0 ? 'Editar Legislação' : 'Nova Legislação'}
+      </h4>
       <IGRPForm
         schema={legislationSchema}
         defaultValues={editingInitial}
@@ -87,10 +101,25 @@ export default function LegislationForm({
         formRef={formRef}
       >
         <IGRPInputText name="name" label="Nome" required />
-        <IGRPSelect name="legislationType" label="Tipo" placeholder="Selecione" options={legislationTypeOptions} />
-        <IGRPInputText name="publicationDate" label="Data de Publicação" required placeholder="YYYY-MM-DD" />
+        <IGRPSelect
+          name="legislationType"
+          label="Tipo"
+          placeholder="Selecione"
+          options={legislationTypeOptions}
+        />
+        <IGRPInputText
+          name="publicationDate"
+          label="Data de Publicação"
+          required
+          placeholder="YYYY-MM-DD"
+        />
         <IGRPInputText name="republicBulletin" label="Número oficial" />
-        <IGRPSelect name="status" label="Status" placeholder="Selecione" options={legislationStatusOptions} />
+        <IGRPSelect
+          name="status"
+          label="Status"
+          placeholder="Selecione"
+          options={legislationStatusOptions}
+        />
 
         {/* Upload de Documento */}
         <div className="md:col-span-2 space-y-2">
@@ -104,13 +133,16 @@ export default function LegislationForm({
             />
             {uploading && <span className="text-sm text-muted-foreground">A carregar…</span>}
           </div>
-          {uploadError && (
-            <div className="text-sm text-destructive">{uploadError}</div>
-          )}
+          {uploadError && <div className="text-sm text-destructive">{uploadError}</div>}
           <IGRPInputText name="documentUrl" label="URL (gerado)" readOnly />
         </div>
 
-        <IGRPTextarea name="description" label="Resumo/Descrição" rows={3} className="md:col-span-2" />
+        <IGRPTextarea
+          name="description"
+          label="Resumo/Descrição"
+          rows={3}
+          className="md:col-span-2"
+        />
 
         <div className="flex items-center gap-2 md:col-span-2">
           <button

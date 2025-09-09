@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -21,32 +20,33 @@ export async function GET(request: NextRequest) {
   // Apply filters
   if (active != null) {
     const wantActive = active === 'true';
-    list = list.filter(item => item.active === wantActive);
+    list = list.filter((item) => item.active === wantActive);
   }
 
   if (licenseTypeId) {
-    list = list.filter(item => item.licenseTypeId === licenseTypeId);
+    list = list.filter((item) => item.licenseTypeId === licenseTypeId);
   }
 
   if (category) {
-    list = list.filter(item => item.category === category);
+    list = list.filter((item) => item.category === category);
   }
 
   if (parameterType) {
-    list = list.filter(item => item.parameterType === parameterType);
+    list = list.filter((item) => item.parameterType === parameterType);
   }
 
   if (isRequired != null) {
     const wantRequired = isRequired === 'true';
-    list = list.filter(item => item.isRequired === wantRequired);
+    list = list.filter((item) => item.isRequired === wantRequired);
   }
 
   if (search) {
     const searchLower = search.toLowerCase();
-    list = list.filter(item => 
-      item.parameterName.toLowerCase().includes(searchLower) ||
-      item.description?.toLowerCase().includes(searchLower) ||
-      item.licenseTypeName?.toLowerCase().includes(searchLower)
+    list = list.filter(
+      (item) =>
+        item.parameterName.toLowerCase().includes(searchLower) ||
+        item.description?.toLowerCase().includes(searchLower) ||
+        item.licenseTypeName?.toLowerCase().includes(searchLower),
     );
   }
 
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit)
+    totalPages: Math.ceil(total / limit),
   });
 }
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
     description: body.description || '',
     isRequired: body.isRequired !== false,
     isEditable: body.isEditable !== false,
-    displayOrder: body.displayOrder ?? (mockGeneralData.length + 1),
+    displayOrder: body.displayOrder ?? mockGeneralData.length + 1,
     validationRules: body.validationRules || '{}',
     defaultValue: body.defaultValue || '',
     category: body.category || '',
@@ -96,9 +96,9 @@ export async function POST(request: NextRequest) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     createdBy: body.createdBy || 'system',
-    updatedBy: body.updatedBy || 'system'
+    updatedBy: body.updatedBy || 'system',
   } as any;
-  
+
   mockGeneralData.push(newItem);
   return NextResponse.json(newItem, { status: 201 });
 }

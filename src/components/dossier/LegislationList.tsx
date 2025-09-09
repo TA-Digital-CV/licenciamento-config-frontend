@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React from 'react';
@@ -45,9 +44,12 @@ export default function LegislationList({
           ) : (
             filteredLegislations.map((l, idx) => {
               const typeLabel =
-                legislationTypeOptions.find((o) => o.value === l.legislationType)?.label || l.legislationType;
+                legislationTypeOptions.find((o) => o.value === l.legislationType)?.label ||
+                l.legislationType;
               const statusLabel =
-                legislationStatusOptions.find((o) => o.value === l.status)?.label || l.status || '-';
+                legislationStatusOptions.find((o) => o.value === l.status)?.label ||
+                l.status ||
+                '-';
               let originalIndex = -1;
               if (l && l.id != null) originalIndex = legislations.findIndex((x) => x.id === l.id);
               if (originalIndex === -1) originalIndex = legislations.findIndex((x) => x === l);
@@ -63,8 +65,8 @@ export default function LegislationList({
                         l.status === 'ACTIVE'
                           ? 'bg-green-100 text-green-800'
                           : l.status === 'INACTIVE'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-700'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-gray-100 text-gray-700'
                       }`}
                     >
                       {statusLabel}

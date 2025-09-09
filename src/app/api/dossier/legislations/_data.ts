@@ -1,6 +1,4 @@
 /* Shared in-memory mock data for Dossier Legislations API */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Based on T_LEGISLATION table from backend documentation
 export type LegislationRecord = {
@@ -50,10 +48,10 @@ export const mockLegislations: LegislationRecord[] = [
     tags: ['hotelaria', 'turismo', 'licenciamento'],
     relatedLegislations: ['2'],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '2',
@@ -75,10 +73,10 @@ export const mockLegislations: LegislationRecord[] = [
     tags: ['hotelaria', 'regulamentacao', 'decreto'],
     relatedLegislations: ['1'],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '3',
@@ -100,10 +98,10 @@ export const mockLegislations: LegislationRecord[] = [
     tags: ['restauracao', 'saude', 'normas-sanitarias'],
     relatedLegislations: [],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '4',
@@ -125,10 +123,10 @@ export const mockLegislations: LegislationRecord[] = [
     tags: ['transporte', 'sustentabilidade', 'urbano'],
     relatedLegislations: [],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '5',
@@ -150,9 +148,9 @@ export const mockLegislations: LegislationRecord[] = [
     tags: ['seguranca-alimentar', 'restauracao', 'normas-tecnicas'],
     relatedLegislations: ['3'],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
-  }
+    updatedBy: 'admin',
+  },
 ];

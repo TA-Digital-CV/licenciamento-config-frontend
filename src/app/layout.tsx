@@ -23,5 +23,5 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const layoutConfig = await configLayout();
   const config = await createConfig(layoutConfig);
 
-  return <IGRPRootLayout config={config}>{children}</IGRPRootLayout>;  
+  return <IGRPRootLayout config={config}>{children}</IGRPRootLayout>;
 }

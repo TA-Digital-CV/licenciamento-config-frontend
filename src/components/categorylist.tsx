@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY iGRP STUDIO. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
@@ -7,8 +7,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useMemo, useState } from 'react';
-import { cn, useIGRPToast, IGRPDataTable, IGRPDataTableButtonLink } from '@igrp/igrp-framework-react-design-system';
+import {
+  cn,
+  useIGRPToast,
+  IGRPDataTable,
+  IGRPDataTableButtonLink,
+} from '@igrp/igrp-framework-react-design-system';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useSearchParams } from 'next/navigation';
 
 export type Category = {
   id: string;
@@ -32,10 +38,18 @@ export default function Categorylist({ parentId }: { parentId?: string }) {
   const [error, setError] = useState<string | null>(null);
   const { igrpToast } = useIGRPToast();
 
+  const searchParams = useSearchParams();
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [sectorFilter, setSectorFilter] = useState<string>('');
+  const [sectorFilter, setSectorFilter] = useState<string>(() => searchParams.get('sectorId') || '');
   const [sectorOptions, setSectorOptions] = useState<{ value: string; label: string }[]>([]);
+
+  // Sincroniza quando a query mudar (ex.: navegação programática do setor)
+  useEffect(() => {
+    const qp = searchParams.get('sectorId') || '';
+    setSectorFilter(qp);
+  }, [searchParams]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -84,66 +98,71 @@ export default function Categorylist({ parentId }: { parentId?: string }) {
     return () => controller.abort();
   }, [parentId, statusFilter, sectorFilter]);
 
-  const columns: ColumnDef<Category>[] = useMemo(() => [
-    {
-      accessorKey: 'name',
-      header: 'Nome',
-      cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
-    },
-    {
-      accessorKey: 'code',
-      header: 'Código',
-      cell: ({ row }) => <div className="font-mono text-sm">{row.getValue('code')}</div>,
-    },
-    {
-      accessorKey: 'description',
-      header: 'Descrição',
-      cell: ({ row }) => (
-        <div className="text-muted-foreground text-sm">{row.getValue('description') || 'Sem descrição'}</div>
-      ),
-    },
-    // New: Setor column using sectorName (if present)
-    {
-      id: 'sector',
-      header: 'Setor',
-      cell: ({ row }) => <div className="text-sm">{row.original.sectorName || '-'}</div>,
-    },
-    {
-      accessorKey: 'active',
-      header: 'Estado',
-      cell: ({ row }) => {
-        const isActive = row.getValue('active') as boolean;
-        return (
-          <div
-            className={cn(
-              'text-xs px-2 py-1 rounded-full',
-              isActive ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-            )}
-          >
-            {isActive ? 'Ativo' : 'Inativo'}
-          </div>
-        );
+  const columns: ColumnDef<Category>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Nome',
+        cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
       },
-    },
-    {
-      id: 'actions',
-      header: 'Ações',
-      cell: ({ row }) => (
-        <IGRPDataTableButtonLink
-          href={`/parametrizacao/category/${row.original.id}/editar`}
-          labelTrigger="Editar"
-          icon="Pencil"
-          variant="ghost"
-        />
-      ),
-    },
-  ], []);
+      {
+        accessorKey: 'code',
+        header: 'Código',
+        cell: ({ row }) => <div className="font-mono text-sm">{row.getValue('code')}</div>,
+      },
+      {
+        accessorKey: 'description',
+        header: 'Descrição',
+        cell: ({ row }) => (
+          <div className="text-muted-foreground text-sm">
+            {row.getValue('description') || 'Sem descrição'}
+          </div>
+        ),
+      },
+      // New: Setor column using sectorName (if present)
+      {
+        id: 'sector',
+        header: 'Setor',
+        cell: ({ row }) => <div className="text-sm">{row.original.sectorName || '-'}</div>,
+      },
+      {
+        accessorKey: 'active',
+        header: 'Estado',
+        cell: ({ row }) => {
+          const isActive = row.getValue('active') as boolean;
+          return (
+            <div
+              className={cn(
+                'text-xs px-2 py-1 rounded-full',
+                isActive ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800',
+              )}
+            >
+              {isActive ? 'Ativo' : 'Inativo'}
+            </div>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Ações',
+        cell: ({ row }) => (
+          <IGRPDataTableButtonLink
+            href={`/parametrizacao/category/${row.original.id}/editar`}
+            labelTrigger="Editar"
+            icon="Pencil"
+            variant="ghost"
+          />
+        ),
+      },
+    ],
+    [],
+  );
 
   const filteredData = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return categories;
-    return categories.filter((item) =>
-      (item.name?.toLowerCase().includes(q)) || (item.code?.toLowerCase().includes(q))
+    return categories.filter(
+      (item) => item.name?.toLowerCase().includes(q) || item.code?.toLowerCase().includes(q),
     );
   }, [categories, search]);
 
@@ -176,7 +195,9 @@ export default function Categorylist({ parentId }: { parentId?: string }) {
           >
             <option value="">Todos</option>
             {sectorOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
 

@@ -1,47 +1,6 @@
 /* Shared in-memory mock data for Dossier Entities API */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Based on T_ENTITY_CONTACT table from backend documentation
-export type EntityContactRecord = {
-  id: string;
-  entityId: string;
-  contactType: 'TELEFONE' | 'EMAIL' | 'FAX' | 'WEBSITE' | 'ENDERECO' | 'OUTRO';
-  contactValue: string;
-  description?: string;
-  isPrimary: boolean;
-  isPublic: boolean;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-// Based on T_ENTITY table from backend documentation
-export type EntityRecord = {
-  id: string;
-  licenseTypeId: string;
-  licenseTypeName?: string;
-  entityName: string;
-  entityType: 'PUBLICA' | 'PRIVADA' | 'MISTA' | 'ONG' | 'INTERNACIONAL';
-  entityCategory: 'REGULADORA' | 'FISCALIZADORA' | 'CONSULTIVA' | 'EXECUTIVA' | 'APOIO';
-  description?: string;
-  legalFramework?: string;
-  jurisdiction: 'NACIONAL' | 'REGIONAL' | 'LOCAL' | 'INTERNACIONAL';
-  parentEntityId?: string;
-  parentEntityName?: string;
-  responsiblePerson?: string;
-  establishmentDate?: string;
-  website?: string;
-  logoUrl?: string;
-  status: 'ATIVA' | 'INATIVA' | 'SUSPENSA' | 'EM_REESTRUTURACAO';
-  priority: 'ALTA' | 'MEDIA' | 'BAIXA';
-  contacts: EntityContactRecord[];
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-  updatedBy?: string;
-};
+import { EntityRecord, EntityContactRecord } from '@/app/(myapp)/types/entities.types';
 
 export const mockEntityContacts: EntityContactRecord[] = [
   {
@@ -53,8 +12,8 @@ export const mockEntityContacts: EntityContactRecord[] = [
     isPrimary: true,
     isPublic: true,
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
   },
   {
     id: '2',
@@ -65,8 +24,8 @@ export const mockEntityContacts: EntityContactRecord[] = [
     isPrimary: true,
     isPublic: true,
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
   },
   {
     id: '3',
@@ -77,8 +36,8 @@ export const mockEntityContacts: EntityContactRecord[] = [
     isPrimary: true,
     isPublic: true,
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
   },
   {
     id: '4',
@@ -89,8 +48,8 @@ export const mockEntityContacts: EntityContactRecord[] = [
     isPrimary: true,
     isPublic: true,
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
   },
   {
     id: '5',
@@ -101,9 +60,9 @@ export const mockEntityContacts: EntityContactRecord[] = [
     isPrimary: true,
     isPublic: true,
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z'
-  }
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
+  },
 ];
 
 export const mockEntities: EntityRecord[] = [
@@ -125,12 +84,12 @@ export const mockEntities: EntityRecord[] = [
     logoUrl: '/logos/dgt-logo.png',
     status: 'ATIVA',
     priority: 'ALTA',
-    contacts: mockEntityContacts.filter(c => c.entityId === '1'),
+    contacts: mockEntityContacts.filter((c) => c.entityId === '1'),
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '2',
@@ -150,12 +109,12 @@ export const mockEntities: EntityRecord[] = [
     logoUrl: '/logos/mss-logo.png',
     status: 'ATIVA',
     priority: 'ALTA',
-    contacts: mockEntityContacts.filter(c => c.entityId === '2'),
+    contacts: mockEntityContacts.filter((c) => c.entityId === '2'),
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '3',
@@ -175,12 +134,12 @@ export const mockEntities: EntityRecord[] = [
     logoUrl: '/logos/dgtt-logo.png',
     status: 'ATIVA',
     priority: 'ALTA',
-    contacts: mockEntityContacts.filter(c => c.entityId === '3'),
+    contacts: mockEntityContacts.filter((c) => c.entityId === '3'),
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '4',
@@ -202,10 +161,10 @@ export const mockEntities: EntityRecord[] = [
     priority: 'MEDIA',
     contacts: [],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '5',
@@ -227,9 +186,9 @@ export const mockEntities: EntityRecord[] = [
     priority: 'BAIXA',
     contacts: [],
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
-  }
+    updatedBy: 'admin',
+  },
 ];

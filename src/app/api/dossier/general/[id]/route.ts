@@ -1,44 +1,29 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { mockGeneralData } from '../_data';
 
 // GET /api/dossier/general/[id]
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
-  const item = mockGeneralData.find(item => item.id === id);
-  
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const item = mockGeneralData.find((item) => item.id === id);
+
   if (!item) {
-    return NextResponse.json(
-      { error: 'General data parameter not found' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'General data parameter not found' }, { status: 404 });
   }
-  
+
   return NextResponse.json(item);
 }
 
 // PUT /api/dossier/general/[id]
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  const { id } = params;
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await request.json();
-  
-  const itemIndex = mockGeneralData.findIndex(item => item.id === id);
-  
+
+  const itemIndex = mockGeneralData.findIndex((item) => item.id === id);
+
   if (itemIndex === -1) {
-    return NextResponse.json(
-      { error: 'General data parameter not found' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'General data parameter not found' }, { status: 404 });
   }
-  
+
   const existingItem = mockGeneralData[itemIndex];
   const updatedItem = {
     ...existingItem,
@@ -56,9 +41,9 @@ export async function PUT(
     category: body.category ?? existingItem.category,
     active: body.active ?? existingItem.active,
     updatedAt: new Date().toISOString(),
-    updatedBy: body.updatedBy || 'system'
+    updatedBy: body.updatedBy || 'system',
   };
-  
+
   mockGeneralData[itemIndex] = updatedItem;
   return NextResponse.json(updatedItem);
 }
@@ -66,18 +51,15 @@ export async function PUT(
 // DELETE /api/dossier/general/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = params;
-  const itemIndex = mockGeneralData.findIndex(item => item.id === id);
-  
+  const { id } = await params;
+  const itemIndex = mockGeneralData.findIndex((item) => item.id === id);
+
   if (itemIndex === -1) {
-    return NextResponse.json(
-      { error: 'General data parameter not found' },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: 'General data parameter not found' }, { status: 404 });
   }
-  
+
   const deletedItem = mockGeneralData.splice(itemIndex, 1)[0];
   return NextResponse.json(deletedItem);
 }

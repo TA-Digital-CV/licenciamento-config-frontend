@@ -1,6 +1,4 @@
 /* Shared in-memory mock data for Dossier General Data API */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Based on T_LICENSE_PARAMETER table from backend documentation
 export type GeneralDataRecord = {
@@ -40,10 +38,10 @@ export const mockGeneralData: GeneralDataRecord[] = [
     defaultValue: '50',
     category: 'CAPACIDADE',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '2',
@@ -60,10 +58,10 @@ export const mockGeneralData: GeneralDataRecord[] = [
     defaultValue: '500',
     category: 'INFRAESTRUTURA',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '3',
@@ -80,10 +78,10 @@ export const mockGeneralData: GeneralDataRecord[] = [
     defaultValue: '10',
     category: 'CAPACIDADE',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '4',
@@ -100,29 +98,29 @@ export const mockGeneralData: GeneralDataRecord[] = [
     defaultValue: 'false',
     category: 'INFRAESTRUTURA',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '5',
     licenseTypeId: '102',
     licenseTypeName: 'Licença de Transporte Urbano',
     parameterName: 'data_inicio_operacao',
-    parameterValue: '2024-03-01',
+    parameterValue: '2025-03-01',
     parameterType: 'DATE',
     description: 'Data prevista para início das operações',
     isRequired: true,
     isEditable: true,
     displayOrder: 1,
-    validationRules: '{"minDate": "2024-01-01"}',
+    validationRules: '{"minDate": "2025-01-01"}',
     defaultValue: '',
     category: 'OPERACIONAL',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
-  }
+    updatedBy: 'admin',
+  },
 ];

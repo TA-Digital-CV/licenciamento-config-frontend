@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY iGRP STUDIO. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
@@ -7,7 +7,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useMemo, useState } from 'react';
-import { cn, useIGRPToast, IGRPDataTable, IGRPDataTableButtonLink } from '@igrp/igrp-framework-react-design-system';
+import {
+  cn,
+  useIGRPToast,
+  IGRPDataTable,
+  IGRPDataTableButtonLink,
+} from '@igrp/igrp-framework-react-design-system';
 import type { ColumnDef } from '@tanstack/react-table';
 
 export type LicenceType = {
@@ -39,7 +44,9 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
   const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
   const [sectorFilter, setSectorFilter] = useState<string>('');
   const [sectorOptions, setSectorOptions] = useState<{ value: string; label: string }[]>([]);
-  const [categoriesMap, setCategoriesMap] = useState<Record<string, { sectorId?: string; sectorName?: string }>>({});
+  const [categoriesMap, setCategoriesMap] = useState<
+    Record<string, { sectorId?: string; sectorName?: string }>
+  >({});
 
   useEffect(() => {
     const controller = new AbortController();
@@ -50,7 +57,9 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         const opts = (data.content || []).map((c: any) => ({ value: c.id, label: c.name }));
         setCategoryOptions(opts);
         const map: Record<string, { sectorId?: string; sectorName?: string }> = {};
-        (data.content || []).forEach((c: any) => { map[c.id] = { sectorId: c.sectorId, sectorName: c.sectorName }; });
+        (data.content || []).forEach((c: any) => {
+          map[c.id] = { sectorId: c.sectorId, sectorName: c.sectorName };
+        });
         setCategoriesMap(map);
       } catch (_) {}
     }
@@ -105,111 +114,108 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
     return () => controller.abort();
   }, [categoryId, statusFilter, categoryFilter]);
 
-  const columns: ColumnDef<LicenceType>[] = useMemo(() => [
-    {
-      accessorKey: 'name',
-      header: 'Nome',
-      cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
-    },
-    {
-      accessorKey: 'code',
-      header: 'Código',
-      cell: ({ row }) => (
-        <div className="font-mono text-sm">{row.getValue('code')}</div>
-      ),
-    },
-    {
-      accessorKey: 'description',
-      header: 'Descrição',
-      cell: ({ row }) => (
-        <div className="text-muted-foreground text-sm">
-          {row.getValue('description') || 'Sem descrição'}
-        </div>
-      ),
-    },
-    {
-      accessorKey: 'categoryName',
-      header: 'Categoria',
-      cell: ({ row }) => (
-        <div className="text-sm">{row.getValue('categoryName') || '-'}</div>
-      ),
-    },
-    // New: Setor placeholder column (awaiting backend support)
-    {
-      id: 'sector',
-      header: 'Setor',
-      cell: ({ row }) => {
-        const catId = row.original.categoryId as string | undefined;
-        const sectorName = (catId && categoriesMap[catId]?.sectorName) || '-';
-        return <div className="text-sm">{sectorName}</div>;
+  const columns: ColumnDef<LicenceType>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Nome',
+        cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
       },
-    },
-    // New: Tem Dossier (from metadata.hasDossier)
-    {
-      id: 'hasDossier',
-      header: 'Tem Dossier',
-      cell: ({ row }) => {
-        const has = Boolean((row.original?.metadata as any)?.hasDossier);
-        return (
-          <div className={cn(
-            'text-xs px-2 py-1 rounded-full',
-            has ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
-          )}>
-            {has ? 'Sim' : 'Não'}
+      {
+        accessorKey: 'code',
+        header: 'Código',
+        cell: ({ row }) => <div className="font-mono text-sm">{row.getValue('code')}</div>,
+      },
+      {
+        accessorKey: 'description',
+        header: 'Descrição',
+        cell: ({ row }) => (
+          <div className="text-muted-foreground text-sm">
+            {row.getValue('description') || 'Sem descrição'}
           </div>
-        );
+        ),
       },
-    },
-    {
-      accessorKey: 'sortOrder',
-      header: 'Ordem',
-      cell: ({ row }) => (
-        <div className="text-sm">{row.getValue('sortOrder') || '-'}</div>
-      ),
-    },
-    {
-      accessorKey: 'active',
-      header: 'Estado',
-      cell: ({ row }) => {
-        const isActive = row.getValue('active') as boolean;
-        return (
-          <div
-            className={cn(
-              'text-xs px-2 py-1 rounded-full',
-              isActive ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-            )}
-          >
-            {isActive ? 'Ativo' : 'Inativo'}
-          </div>
-        );
+      {
+        accessorKey: 'categoryName',
+        header: 'Categoria',
+        cell: ({ row }) => <div className="text-sm">{row.getValue('categoryName') || '-'}</div>,
       },
-    },
-    {
-      id: 'actions',
-      header: 'Ações',
-      cell: ({ row }) => {
-        const has = Boolean((row.original?.metadata as any)?.hasDossier);
-        return (
-          <div className="flex items-center gap-2">
-            <IGRPDataTableButtonLink
-              href={`/parametrizacao/licence-type/${row.original.id}/editar`}
-              labelTrigger="Editar"
-
-              icon="Pencil"
-              variant="ghost"
-            />
-            <IGRPDataTableButtonLink
-              href={`/parametrizacao/licence-type/${row.original.id}/dossier`}
-              labelTrigger={has ? 'Dossier' : 'Definir Dossier'}
-
-              icon="Folder"
-              variant={has ? 'ghost' : 'secondary'}
-            />
-          </div>
-        );
+      // New: Setor placeholder column (awaiting backend support)
+      {
+        id: 'sector',
+        header: 'Setor',
+        cell: ({ row }) => {
+          const catId = row.original.categoryId as string | undefined;
+          const sectorName = (catId && categoriesMap[catId]?.sectorName) || '-';
+          return <div className="text-sm">{sectorName}</div>;
+        },
       },
-    },
-  ], [categoriesMap]);
+      // New: Tem Dossier (from metadata.hasDossier)
+      {
+        id: 'hasDossier',
+        header: 'Tem Dossier',
+        cell: ({ row }) => {
+          const has = Boolean((row.original?.metadata as any)?.hasDossier);
+          return (
+            <div
+              className={cn(
+                'text-xs px-2 py-1 rounded-full',
+                has ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700',
+              )}
+            >
+              {has ? 'Sim' : 'Não'}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: 'sortOrder',
+        header: 'Ordem',
+        cell: ({ row }) => <div className="text-sm">{row.getValue('sortOrder') || '-'}</div>,
+      },
+      {
+        accessorKey: 'active',
+        header: 'Estado',
+        cell: ({ row }) => {
+          const isActive = row.getValue('active') as boolean;
+          return (
+            <div
+              className={cn(
+                'text-xs px-2 py-1 rounded-full',
+                isActive ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800',
+              )}
+            >
+              {isActive ? 'Ativo' : 'Inativo'}
+            </div>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        header: 'Ações',
+        cell: ({ row }) => {
+          const has = Boolean((row.original?.metadata as any)?.hasDossier);
+          return (
+            <div className="flex items-center gap-2">
+              <IGRPDataTableButtonLink
+                href={`/parametrizacao/licence-type/${row.original.id}/editar`}
+                labelTrigger="Editar"
+                icon="Pencil"
+                variant="ghost"
+              />
+              <IGRPDataTableButtonLink
+                href={`/parametrizacao/licence-type/${row.original.id}/dossier`}
+                labelTrigger={has ? 'Dossier' : 'Definir Dossier'}
+                icon="Folder"
+                variant={has ? 'ghost' : 'secondary'}
+              />
+            </div>
+          );
+        },
+      },
+    ],
+    [categoriesMap],
+  );
 
   // New: client-side search on name and code
   // Removed duplicate filteredData useMemo that caused collision
@@ -220,8 +226,8 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
     const q = search.trim().toLowerCase();
     let base = licenceTypes;
     if (q) {
-      base = base.filter((item: any) =>
-        (item.name?.toLowerCase().includes(q)) || (item.code?.toLowerCase().includes(q))
+      base = base.filter(
+        (item: any) => item.name?.toLowerCase().includes(q) || item.code?.toLowerCase().includes(q),
       );
     }
     if (dossierFilter !== 'all') {
@@ -267,7 +273,9 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
           >
             <option value="">Todos</option>
             {sectorOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
 
@@ -279,7 +287,9 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
           >
             <option value="">Todas</option>
             {categoryOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
 

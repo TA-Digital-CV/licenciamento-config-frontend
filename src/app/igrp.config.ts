@@ -45,5 +45,5 @@ export default {
   types: [],
   actions: [],
   functions: [],
-  components: []
+  components: [],
 };

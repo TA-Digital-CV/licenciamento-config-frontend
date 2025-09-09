@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 /* THIS FILE WAS GENERATED AUTOMATICALLY BY iGRP STUDIO. */
 /* DO NOT MODIFY IT BECAUSE IT COULD BE REWRITTEN AT ANY TIME. */
@@ -6,8 +6,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useRef, useState } from 'react';
-import { z } from 'zod';
+import { useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   IGRPForm,
   IGRPInputText,
@@ -15,111 +15,53 @@ import {
   IGRPSwitch,
   IGRPTextarea,
   IGRPSelect,
-  useIGRPToast,
 } from '@igrp/igrp-framework-react-design-system';
-import { useRouter } from 'next/navigation';
+import { useLicenseTypesActions } from '@/app/(myapp)/actions/licensetypes.actions';
+import { licenceTypeFormSchema } from '@/app/(myapp)/functions/validation.functions';
 
-const formSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().optional().default(''),
-  code: z.string().min(1, 'Código é obrigatório'),
-  categoryId: z.string().min(1, 'Categoria é obrigatória'), // Required now
-  sortOrder: z.coerce.number().int().optional(),
-  active: z.boolean().default(true),
-  metadata: z.string().optional().default(''),
-});
+// Schema is now imported from validation.functions.ts
 
-export default function LicenceTypeForm({ id } : { id?: string }) {
-  const formRef = useRef<any | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [submitting, setSubmitting] = useState<boolean>(false);
-  const [initialValues, setInitialValues] = useState<any>({ name: '', description: '', code: '', categoryId: '', sortOrder: undefined, active: true, metadata: '' });
-  const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+export default function LicenceTypeForm({ id }: { id?: string }) {
   const router = useRouter();
-  const { igrpToast } = useIGRPToast();
+  
+  // Use the license types actions hook
+  const {
+    loading,
+    submitting,
+    initialValues,
+    categories,
+    licensingModels,
+    isEditing,
+    actionsDisabled,
+    handleSubmit,
+  } = useLicenseTypesActions(id);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    async function fetchCategories() {
-      try {
-        const res = await fetch('/api/categories?active=true', { signal: controller.signal });
-        const data = await res.json();
-        const opts = (data.content || []).map((c: any) => ({ value: c.id, label: c.name }));
-        setCategoryOptions(opts);
-      } catch (_) {}
-    }
-    fetchCategories();
-    return () => controller.abort();
-  }, []);
+  // Convert categories and licensing models to options format
+  const categoryOptions = categories.map(cat => ({ value: cat.id, label: cat.name }));
+  const licensingModelOptions = licensingModels;
 
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      if (!id) return;
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/licence-types/${id}`);
-        if (!res.ok) throw new Error('Falha ao carregar tipo de licença');
-        const data = await res.json();
-        const mapped = {
-          name: data.name ?? '',
-          description: data.description ?? '',
-          code: data.code ?? '',
-          categoryId: data.categoryId ?? '',
-          sortOrder: data.sortOrder ?? undefined,
-          active: data.active !== false,
-          metadata: typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
-        };
-        if (mounted) setInitialValues(mapped);
-      } catch (e: any) {
-        console.error(e);
-        igrpToast({ title: 'Erro', description: e?.message || 'Falha ao carregar tipo de licença', type: 'default' });
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-    return () => { mounted = false };
-  }, [id]);
+  const formRef = useRef<any | null>(null);
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setSubmitting(true);
-    try {
-      const payload = {
-        name: values.name,
-        description: values.description || '',
-        code: values.code,
-        categoryId: values.categoryId,
-        sortOrder: values.sortOrder,
-        active: values.active !== false,
-        metadata: (() => { try { return values.metadata ? JSON.parse(values.metadata) : null; } catch { return values.metadata || null; } })(),
-      };
+  // Options loading is now handled by the actions hook
 
-      if (!id) {
-        const res = await fetch('/api/licence-types', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!res.ok) throw new Error('Falha ao criar tipo de licença');
-      } else {
-        const res = await fetch(`/api/licence-types/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        if (!res.ok) throw new Error('Falha ao atualizar tipo de licença');
-      }
+  // Data loading is now handled by the actions hook
 
-      igrpToast({ title: 'Sucesso', description: 'Tipo de licença guardado com sucesso', type: 'default' });
-      router.push('/parametrizacao');
-    } catch (e: any) {
-      console.error(e);
-      igrpToast({ title: 'Erro', description: e?.message || 'Erro ao submeter', type: 'default' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  // Form submission is now handled by the actions hook
 
-  const actionsDisabled = loading || submitting;
-  const isEditing = Boolean(id);
+  // State is now managed by the actions hook
 
   return (
-    <div className="space-y-4">
+    <div
+      className="space-y-4"
+      onKeyDownCapture={(e) => {
+        const tag = (e.target as HTMLElement).tagName;
+        if (e.key === 'Enter' && (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA')) {
+          e.preventDefault();
+        }
+      }}
+    >
       <IGRPForm
-        schema={formSchema}
+        schema={licenceTypeFormSchema}
         defaultValues={initialValues}
         validationMode="onSubmit"
         onSubmit={handleSubmit}
@@ -127,17 +69,34 @@ export default function LicenceTypeForm({ id } : { id?: string }) {
         formRef={formRef}
         className="space-y-4"
         gridClassName="grid-cols-1 md:grid-cols-2"
-        key={isEditing ? `edit-${id}-${JSON.stringify(initialValues)}` : 'create'}
+        key={isEditing ? `edit-${id}-${initialValues.code ?? ''}` : 'create'}
       >
         <IGRPInputText name="name" label="Nome" required />
         <IGRPInputText name="code" label="Código" required disabled={isEditing} />
-        <IGRPSelect 
-          name="categoryId" 
-          label="Categoria" 
-          required 
+        <IGRPSelect
+          name="categoryId"
+          label="Categoria"
+          required
           placeholder="Selecione uma categoria"
           options={categoryOptions}
         />
+        <IGRPSelect
+          name="licensingModelKey"
+          label="Modelo de Licenciamento"
+          required
+          placeholder="Selecione o modelo"
+          options={licensingModelOptions}
+        />
+        <IGRPInputNumber name="validityPeriod" label="Período de Validade" required />
+        <IGRPInputText name="validityUnitKey" label="Unidade de Validade" required />
+        <IGRPSwitch name="renewable" label="Renovável" />
+        <IGRPSwitch name="autoRenewal" label="Renovação Automática" />
+        <IGRPSwitch name="requiresInspection" label="Requer Inspeção" />
+        <IGRPSwitch name="requiresPublicConsultation" label="Requer Consulta Pública" />
+        <IGRPInputNumber name="maxProcessingDays" label="Prazo Máximo (dias)" />
+        <IGRPSwitch name="hasFees" label="Possui Taxas" />
+        <IGRPInputNumber name="baseFee" label="Taxa Base" />
+        <IGRPInputText name="currencyCode" label="Código da Moeda" />
         <IGRPInputNumber name="sortOrder" label="Ordenação" />
         <IGRPSwitch name="active" label="Ativo" />
         <IGRPTextarea name="description" label="Descrição" rows={3} className="md:col-span-2" />
@@ -145,7 +104,8 @@ export default function LicenceTypeForm({ id } : { id?: string }) {
 
         <div className="flex items-center gap-2 md:col-span-2">
           <button
-            type="submit"
+            type="button"
+            onClick={() => formRef.current?.submit()}
             disabled={actionsDisabled}
             aria-busy={submitting}
             className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50 disabled:pointer-events-none"
@@ -154,7 +114,7 @@ export default function LicenceTypeForm({ id } : { id?: string }) {
           </button>
           <button
             type="button"
-            onClick={() => router.push('/parametrizacao')}
+            onClick={() => router.push('/parametrizacao?tab=licence-types')}
             disabled={actionsDisabled}
             className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50 disabled:pointer-events-none"
           >

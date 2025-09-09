@@ -1,77 +1,61 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { mockOptions } from './_data';
+import { apiClient, ApiResponse } from '@/app/(myapp)/lib/api-client';
+import {
+  WrapperListOptionsDTO,
+  OptionRequestDTO,
+  OptionResponseDTO,
+} from '@/app/(myapp)/types/options.types';
 
-// GET /api/(myapp)/(mockapi)/options - Get all options grouped by code
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const codes = searchParams.get('codes');
-  const locale = searchParams.get('locale') || 'pt-CV';
-  const includeInactive = searchParams.get('includeInactive') === 'true';
+  try {
+    const { searchParams } = new URL(request.url);
+    const ccode = searchParams.get('ccode');
+    const ckey = searchParams.get('ckey');
+    const cvalue = searchParams.get('cvalue');
+    const locale = searchParams.get('locale');
+    const sortOrder = searchParams.get('sortOrder');
+    const active = searchParams.get('active') || 'true';
+    const pageNumber = searchParams.get('pageNumber') || '0';
+    const pageSize = searchParams.get('pageSize') || '20';
 
-  // Filter options
-  let filteredOptions = mockOptions.filter(option => 
-    option.locale === locale && (includeInactive || option.active)
-  );
-
-  if (codes) {
-    const codeList = codes.split(',').map(c => c.trim());
-    filteredOptions = filteredOptions.filter(option => 
-      codeList.includes(option.ccode)
-    );
-  }
-
-  // Group by code and count items
-  const groupedOptions = filteredOptions.reduce((acc, option) => {
-    if (!acc[option.ccode]) {
-      acc[option.ccode] = {
-        code: option.ccode,
-        locale: option.locale,
-        items: [],
-        count: 0
-      };
-    }
-    acc[option.ccode].items.push({
-      key: option.ckey,
-      value: option.cvalue,
-      sortOrder: option.sort_order,
-      description: option.description,
-      metadata: option.metadata
+    // Build query parameters matching backend controller
+    const params = new URLSearchParams({
+      pageNumber,
+      pageSize,
+      active,
     });
-    acc[option.ccode].count++;
-    return acc;
-  }, {} as Record<string, any>);
 
-  // Sort items within each group
-  Object.values(groupedOptions).forEach((group: any) => {
-    group.items.sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0));
-  });
+    if (ccode) params.append('ccode', ccode);
+    if (ckey) params.append('ckey', ckey);
+    if (cvalue) params.append('cvalue', cvalue);
+    if (locale) params.append('locale', locale);
+    if (sortOrder) params.append('sortOrder', sortOrder);
 
-  return NextResponse.json({
-    locale,
-    optionSets: groupedOptions
-  });
+    const response = await apiClient.get<WrapperListOptionsDTO>(`/options?${params.toString()}`);
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error('Error fetching options:', error);
+    return NextResponse.json({ error: 'Failed to fetch options' }, { status: 500 });
+  }
 }
 
-// POST /api/(myapp)/(mockapi)/options - Create new option
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  
-  const newOption = {
-    id: (mockOptions.length + 1).toString(),
-    ccode: body.code,
-    ckey: body.key,
-    cvalue: body.value,
-    locale: body.locale || 'pt-CV',
-    sort_order: body.sortOrder ?? (mockOptions.filter(o => o.ccode === body.code).length + 1),
-    active: body.active !== false,
-    description: body.description || '',
-    metadata: body.metadata ?? null
-  } as any;
+  try {
+    const body: OptionRequestDTO = await request.json();
 
-  mockOptions.push(newOption);
+    if (!body.ccode || !body.ckey || !body.cvalue) {
+      return NextResponse.json(
+        { error: 'Missing required fields: ccode, ckey, cvalue' },
+        { status: 400 },
+      );
+    }
 
-  return NextResponse.json(newOption, { status: 201 });
+    const response = await apiClient.post<OptionResponseDTO>('/options', body);
+
+    return NextResponse.json(response, { status: 201 });
+  } catch (error) {
+    console.error('Error creating option:', error);
+    return NextResponse.json({ error: 'Failed to create option' }, { status: 500 });
+  }
 }

@@ -1,46 +1,89 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { mockSectors } from './_data';
+import { apiClient, ApiResponse } from '../../(myapp)/lib/api-client';
+import { SectorResponseDTO, SectorRequestDTO } from '@/app/(myapp)/types/sectors.types';
 
-// GET /api/(myapp)/(mockapi)/sectors
+// GET /api/sectors
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const active = searchParams.get('active');
-  const sectorType = searchParams.get('sectorType');
+  try {
+    const { searchParams } = new URL(request.url);
+    const params: Record<string, string> = {};
 
-  let list = [...mockSectors];
-  if (active != null) {
-    const wantActive = active === 'true';
-    list = list.filter(s => (s.active === wantActive));
+    // Map query parameters
+    if (searchParams.get('active') !== null) {
+      params.active = searchParams.get('active')!;
+    }
+    if (searchParams.get('sectorType')) {
+      params.sectorType = searchParams.get('sectorType')!;
+    }
+    if (searchParams.get('page')) {
+      params.page = searchParams.get('page')!;
+    }
+    if (searchParams.get('size')) {
+      params.size = searchParams.get('size')!;
+    }
+
+    const response = await apiClient.get<ApiResponse<SectorResponseDTO>>('/sectors', params);
+
+    // Transform backend response to match frontend expectations
+    const transformedContent = response.content.map((sector) => ({
+      id: sector.id,
+      name: sector.name,
+      description: sector.description || '',
+      code: sector.code,
+      sectorTypeKey: sector.sectorType,
+      sectorTypeValue: sector.sectorType,
+      active: sector.active,
+      sortOrder: sector.sortOrder || 0,
+      metadata: sector.metadata || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    return NextResponse.json({
+      content: transformedContent,
+      total: response.total,
+    });
+  } catch (error) {
+    console.error('Error fetching sectors:', error);
+    return NextResponse.json({ message: 'Failed to fetch sectors' }, { status: 500 });
   }
-  if (sectorType) {
-    list = list.filter(s => s.sectorTypeKey === sectorType);
-  }
-
-  // sort by sortOrder then name
-  list.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || a.name.localeCompare(b.name));
-
-  return NextResponse.json({ content: list, total: list.length });
 }
 
-// POST /api/(myapp)/(mockapi)/sectors
+// POST /api/sectors
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const newItem = {
-    id: `${Date.now()}`,
-    name: body.name,
-    description: body.description || '',
-    code: body.code,
-    sectorTypeKey: body.sectorTypeKey,
-    sectorTypeValue: body.sectorTypeValue || undefined,
-    active: body.active !== false,
-    sortOrder: body.sortOrder ?? (mockSectors.length + 1),
-    metadata: body.metadata ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  } as any;
-  mockSectors.push(newItem);
-  return NextResponse.json(newItem, { status: 201 });
+  try {
+    const body = await request.json();
+
+    const sectorData: SectorRequestDTO = {
+      name: body.name,
+      description: body.description || undefined,
+      code: body.code,
+      sectorTypeKey: body.sectorTypeKey,
+      active: body.active !== false,
+      sortOrder: body.sortOrder || undefined,
+      metadata: body.metadata || undefined,
+    };
+
+    const response = await apiClient.post<SectorResponseDTO>('/sectors', sectorData);
+
+    // Transform backend response to match frontend expectations
+    const transformedResponse = {
+      id: response.id,
+      name: response.name,
+      description: response.description || '',
+      code: response.code,
+      sectorTypeKey: response.sectorType,
+      sectorTypeValue: response.sectorType,
+      active: response.active,
+      sortOrder: response.sortOrder || 0,
+      metadata: response.metadata || null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return NextResponse.json(transformedResponse, { status: 201 });
+  } catch (error) {
+    console.error('Error creating sector:', error);
+    return NextResponse.json({ message: 'Failed to create sector' }, { status: 500 });
+  }
 }

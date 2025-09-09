@@ -1,6 +1,4 @@
 /* Shared in-memory mock data for Dossier Process Types API */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Based on T_LICENSE_TYPE_PROCESS_TYPE table from backend documentation
 export type ProcessTypeAssociationRecord = {
@@ -54,7 +52,7 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
       'Projeto arquitetónico',
       'Planta de localização',
       'Certificado de propriedade',
-      'Estudo de impacto ambiental'
+      'Estudo de impacto ambiental',
     ],
     responsibleEntity: 'Direção Geral do Turismo',
     cost: 25000,
@@ -65,14 +63,14 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     canBeParallel: false,
     requiresApproval: true,
     approvalLevel: 'DIRETOR',
-    validFrom: '2024-01-01',
+    validFrom: '2025-01-01',
     validUntil: undefined,
     notes: 'Processo obrigatório para todos os estabelecimentos hoteleiros',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '2',
@@ -90,7 +88,7 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     requiredDocuments: [
       'Certificado de análise de água',
       'Plano de higiene e segurança alimentar',
-      'Certificado de desinfestação'
+      'Certificado de desinfestação',
     ],
     responsibleEntity: 'Ministério da Saúde',
     cost: 15000,
@@ -101,14 +99,14 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     canBeParallel: true,
     requiresApproval: true,
     approvalLevel: 'TECNICO',
-    validFrom: '2024-01-01',
+    validFrom: '2025-01-01',
     validUntil: undefined,
     notes: 'Inspeção obrigatória antes da emissão da licença',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '3',
@@ -127,7 +125,7 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
       'Certificado de instalação elétrica',
       'Plano de evacuação',
       'Certificado de sistemas de incêndio',
-      'Seguro de responsabilidade civil'
+      'Seguro de responsabilidade civil',
     ],
     responsibleEntity: 'Proteção Civil',
     cost: 20000,
@@ -138,14 +136,14 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     canBeParallel: true,
     requiresApproval: true,
     approvalLevel: 'SUPERVISOR',
-    validFrom: '2024-01-01',
+    validFrom: '2025-01-01',
     validUntil: undefined,
     notes: 'Verificação obrigatória dos sistemas de segurança',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '4',
@@ -163,7 +161,7 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     requiredDocuments: [
       'Certificado de formação em higiene alimentar',
       'Plano HACCP',
-      'Certificado de análise de água'
+      'Certificado de análise de água',
     ],
     responsibleEntity: 'Ministério da Saúde',
     cost: 10000,
@@ -174,14 +172,14 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     canBeParallel: false,
     requiresApproval: true,
     approvalLevel: 'TECNICO',
-    validFrom: '2024-01-01',
+    validFrom: '2025-01-01',
     validUntil: undefined,
     notes: 'Processo fundamental para licenciamento de restaurantes',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '5',
@@ -199,7 +197,7 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     requiredDocuments: [
       'Certidão de registo comercial',
       'Comprovativo de pagamento de taxas',
-      'Planta do estabelecimento'
+      'Planta do estabelecimento',
     ],
     responsibleEntity: 'Câmara Municipal',
     cost: 8000,
@@ -210,14 +208,14 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     canBeParallel: false,
     requiresApproval: true,
     approvalLevel: 'SUPERVISOR',
-    validFrom: '2024-01-01',
+    validFrom: '2025-01-01',
     validUntil: undefined,
     notes: 'Licença municipal obrigatória',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
+    updatedBy: 'admin',
   },
   {
     id: '6',
@@ -235,7 +233,7 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     requiredDocuments: [
       'Certificado de matrícula',
       'Seguro automóvel',
-      'Certificado de inspeção técnica'
+      'Certificado de inspeção técnica',
     ],
     responsibleEntity: 'Direção Geral dos Transportes',
     cost: 5000,
@@ -246,13 +244,13 @@ export const mockProcessTypeAssociations: ProcessTypeAssociationRecord[] = [
     canBeParallel: false,
     requiresApproval: true,
     approvalLevel: 'TECNICO',
-    validFrom: '2024-01-01',
+    validFrom: '2025-01-01',
     validUntil: undefined,
     notes: 'Inspeção obrigatória para todos os veículos',
     active: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
+    createdAt: '2025-01-15T10:00:00Z',
+    updatedAt: '2025-01-15T10:00:00Z',
     createdBy: 'admin',
-    updatedBy: 'admin'
-  }
+    updatedBy: 'admin',
+  },
 ];

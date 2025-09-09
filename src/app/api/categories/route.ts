@@ -1,53 +1,99 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { mockCategories } from './_data';
-import { mockSectors } from '../sectors/_data';
+import { apiClient, ApiResponse } from '../../(myapp)/lib/api-client';
+import { CategoryResponseDTO, CategoryRequestDTO } from '@/app/(myapp)/types/categories.types';
 
-// GET /api/(myapp)/(mockapi)/categories
+// GET /api/categories
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const active = searchParams.get('active');
-  const parentId = searchParams.get('parentId');
-  const sectorId = searchParams.get('sectorId');
+  try {
+    const { searchParams } = new URL(request.url);
+    const params: Record<string, string> = {};
 
-  let list = [...mockCategories];
-  if (active != null) {
-    const wantActive = active === 'true';
-    list = list.filter(s => (s.active === wantActive));
-  }
-  if (parentId) {
-    list = list.filter(s => s.parentCategoryId === parentId);
-  }
-  if (sectorId) {
-    list = list.filter(s => s.sectorId === sectorId);
-  }
+    // Map query parameters
+    if (searchParams.get('active') !== null) {
+      params.active = searchParams.get('active')!;
+    }
+    if (searchParams.get('parentId')) {
+      params.parentId = searchParams.get('parentId')!;
+    }
+    if (searchParams.get('sectorId')) {
+      params.sectorId = searchParams.get('sectorId')!;
+    }
+    if (searchParams.get('page')) {
+      params.page = searchParams.get('page')!;
+    }
+    if (searchParams.get('size')) {
+      params.size = searchParams.get('size')!;
+    }
 
-  list.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0) || a.name.localeCompare(b.name));
+    const response = await apiClient.get<ApiResponse<CategoryResponseDTO>>('/categories', params);
 
-  return NextResponse.json({ content: list, total: list.length });
+    // Transform backend response to match frontend expectations
+    const transformedContent = response.content.map((category) => ({
+      id: category.id,
+      name: category.name,
+      description: '',
+      code: category.code,
+      active: true,
+      level: category.level,
+      sortOrder: 0,
+      metadata: category.metadata,
+      path: category.path,
+      parentId: null,
+      sectorId: category.sectorId,
+      sectorName: category.sectorName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    return NextResponse.json({
+      content: transformedContent,
+      total: response.total,
+    });
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return NextResponse.json({ message: 'Failed to fetch categories' }, { status: 500 });
+  }
 }
 
-// POST /api/(myapp)/(mockapi)/categories
+// POST /api/categories
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const sector = body.sectorId ? mockSectors.find(s => s.id === body.sectorId) : undefined;
-  const newItem = {
-    id: `${Date.now()}`,
-    name: body.name,
-    description: body.description || '',
-    code: body.code,
-    parentCategoryId: body.parentCategoryId || undefined,
-    parentCategoryName: body.parentCategoryName || undefined,
-    sectorId: body.sectorId || undefined,
-    sectorName: sector?.name || undefined,
-    active: body.active !== false,
-    sortOrder: body.sortOrder ?? (mockCategories.length + 1),
-    metadata: body.metadata ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  } as any;
-  mockCategories.push(newItem);
-  return NextResponse.json(newItem, { status: 201 });
+  try {
+    const body = await request.json();
+
+    const categoryData: CategoryRequestDTO = {
+      name: body.name,
+      description: body.description || undefined,
+      code: body.code,
+      active: body.active !== false,
+      sortOrder: body.sortOrder || undefined,
+      metadata: body.metadata || undefined,
+      parentId: body.parentId || undefined,
+      sectorId: body.sectorId,
+    };
+
+    const response = await apiClient.post<CategoryResponseDTO>('/categories', categoryData);
+
+    // Transform backend response to match frontend expectations
+    const transformedResponse = {
+      id: response.id,
+      name: response.name,
+      description: '',
+      code: response.code,
+      active: true,
+      level: response.level,
+      sortOrder: 0,
+      metadata: response.metadata,
+      path: response.path,
+      parentId: null,
+      sectorId: response.sectorId,
+      sectorName: response.sectorName,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return NextResponse.json(transformedResponse, { status: 201 });
+  } catch (error) {
+    console.error('Error creating category:', error);
+    return NextResponse.json({ message: 'Failed to create category' }, { status: 500 });
+  }
 }

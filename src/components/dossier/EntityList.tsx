@@ -11,7 +11,8 @@ type Props = {
 };
 
 export default function EntityList({ entities, entityTypeOptions, onEdit, onDelete }: Props) {
-  const labelFor = (value: string) => entityTypeOptions.find((o) => o.value === value)?.label || value || '';
+  const labelFor = (value: string) =>
+    entityTypeOptions.find((o) => o.value === value)?.label || value || '';
 
   return (
     <div className="overflow-x-auto">
@@ -27,7 +28,9 @@ export default function EntityList({ entities, entityTypeOptions, onEdit, onDele
         <tbody>
           {entities.length === 0 ? (
             <tr>
-              <td colSpan={4} className="py-4 text-muted-foreground">Nenhuma entidade adicionada.</td>
+              <td colSpan={4} className="py-4 text-muted-foreground">
+                Nenhuma entidade adicionada.
+              </td>
             </tr>
           ) : (
             entities.map((e, idx) => (
@@ -35,16 +38,26 @@ export default function EntityList({ entities, entityTypeOptions, onEdit, onDele
                 <td className="py-2 pr-3">{labelFor(e.entityType)}</td>
                 <td className="py-2 pr-3">{e.name}</td>
                 <td className="py-2 pr-3">
-                  <span className={`px-2 py-1 rounded text-xs ${e.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <span
+                    className={`px-2 py-1 rounded text-xs ${e.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                  >
                     {e.active ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
                 <td className="py-2 pr-3">
                   <div className="flex gap-2">
-                    <button type="button" className="text-blue-600 hover:underline" onClick={() => onEdit(idx)}>
+                    <button
+                      type="button"
+                      className="text-blue-600 hover:underline"
+                      onClick={() => onEdit(idx)}
+                    >
                       Editar
                     </button>
-                    <button type="button" className="text-red-600 hover:underline" onClick={() => onDelete(idx)}>
+                    <button
+                      type="button"
+                      className="text-red-600 hover:underline"
+                      onClick={() => onDelete(idx)}
+                    >
                       Remover
                     </button>
                   </div>

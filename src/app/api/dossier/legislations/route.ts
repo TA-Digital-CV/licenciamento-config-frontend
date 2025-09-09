@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -22,50 +21,51 @@ export async function GET(request: NextRequest) {
   // Apply filters
   if (active != null) {
     const wantActive = active === 'true';
-    list = list.filter(item => item.active === wantActive);
+    list = list.filter((item) => item.active === wantActive);
   }
 
   if (licenseTypeId) {
-    list = list.filter(item => item.licenseTypeId === licenseTypeId);
+    list = list.filter((item) => item.licenseTypeId === licenseTypeId);
   }
 
   if (legislationType) {
-    list = list.filter(item => item.legislationType === legislationType);
+    list = list.filter((item) => item.legislationType === legislationType);
   }
 
   if (status) {
-    list = list.filter(item => item.status === status);
+    list = list.filter((item) => item.status === status);
   }
 
   if (priority) {
-    list = list.filter(item => item.priority === priority);
+    list = list.filter((item) => item.priority === priority);
   }
 
   if (year) {
-    list = list.filter(item => item.legislationYear === parseInt(year));
+    list = list.filter((item) => item.legislationYear === parseInt(year));
   }
 
   if (search) {
     const searchLower = search.toLowerCase();
-    list = list.filter(item => 
-      item.title.toLowerCase().includes(searchLower) ||
-      item.description?.toLowerCase().includes(searchLower) ||
-      item.legislationNumber.toLowerCase().includes(searchLower) ||
-      item.issuingAuthority.toLowerCase().includes(searchLower) ||
-      item.licenseTypeName?.toLowerCase().includes(searchLower)
+    list = list.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchLower) ||
+        item.description?.toLowerCase().includes(searchLower) ||
+        item.legislationNumber.toLowerCase().includes(searchLower) ||
+        item.issuingAuthority.toLowerCase().includes(searchLower) ||
+        item.licenseTypeName?.toLowerCase().includes(searchLower),
     );
   }
 
   // Sort by priority (ALTA first), then by effectiveDate (newest first)
   list.sort((a, b) => {
-    const priorityOrder = { 'ALTA': 1, 'MEDIA': 2, 'BAIXA': 3 };
+    const priorityOrder = { ALTA: 1, MEDIA: 2, BAIXA: 3 };
     const priorityA = priorityOrder[a.priority] || 4;
     const priorityB = priorityOrder[b.priority] || 4;
-    
+
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
-    
+
     return new Date(b.effectiveDate).getTime() - new Date(a.effectiveDate).getTime();
   });
 
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     total,
     page,
     limit,
-    totalPages: Math.ceil(total / limit)
+    totalPages: Math.ceil(total / limit),
   });
 }
 
@@ -110,9 +110,9 @@ export async function POST(request: NextRequest) {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     createdBy: body.createdBy || 'system',
-    updatedBy: body.updatedBy || 'system'
+    updatedBy: body.updatedBy || 'system',
   } as any;
-  
+
   mockLegislations.push(newItem);
   return NextResponse.json(newItem, { status: 201 });
 }
