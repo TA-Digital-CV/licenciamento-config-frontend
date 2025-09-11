@@ -3,33 +3,34 @@
 export interface LicenseTypeResponseDTO {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   code: string;
   categoryId: string;
-  categoryName: string;
-  licensingModelKey: string;
-  validityPeriod: number;
-  validityUnitKey: string;
+  licensingModel: string;
+  validityPeriod?: number;
+  validityUnit: string;
   renewable: boolean;
-  autoRenewal: boolean;
-  requiresInspection: boolean;
-  requiresPublicConsultation: boolean;
-  maxProcessingDays: number;
-  hasFees: boolean;
-  baseFee: number;
+  autoRenewal?: boolean;
+  requiresInspection?: boolean;
+  requiresPublicConsultation?: boolean;
+  maxProcessingDays?: number;
+  hasFees?: boolean;
+  baseFee?: number;
   currencyCode: string;
-  metadata: Record<string, unknown>;
+  sortOrder?: number;
+  active: boolean;
+  metadata?: unknown;
 }
 
 export interface LicenseTypeRequestDTO {
   name: string;
   description?: string;
   code: string;
-  categoryId?: string;
+  categoryId: string;
   licensingModelKey: string;
-  validityPeriod: number;
+  validityPeriod?: number;
   validityUnitKey: string;
-  renewable?: boolean;
+  renewable: boolean;
   autoRenewal?: boolean;
   requiresInspection?: boolean;
   requiresPublicConsultation?: boolean;
@@ -37,10 +38,9 @@ export interface LicenseTypeRequestDTO {
   hasFees?: boolean;
   baseFee?: number;
   currencyCode?: string;
-  active?: boolean;
   sortOrder?: number;
-  metadata?: Record<string, unknown>;
-  [key: string]: unknown;
+  active: boolean;
+  metadata?: unknown;
 }
 
 export interface WrapperListLicenseTypeDTO {

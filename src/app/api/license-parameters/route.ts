@@ -10,8 +10,11 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active') || 'true';
+    const id = searchParams.get('id');
     const licenseTypeId = searchParams.get('licenseTypeId');
-    const parameterType = searchParams.get('parameterType');
+    const validityUnit = searchParams.get('validityUnit');
+    const model = searchParams.get('model');
+    const vitalityFlag = searchParams.get('vitalityFlag');
     const pageNumber = searchParams.get('pageNumber') || '0';
     const pageSize = searchParams.get('pageSize') || '20';
 
@@ -22,8 +25,11 @@ export async function GET(request: NextRequest) {
       active,
     });
 
+    if (id) params.append('id', id);
     if (licenseTypeId) params.append('licenseTypeId', licenseTypeId);
-    if (parameterType) params.append('parameterType', parameterType);
+    if (validityUnit) params.append('validityUnit', validityUnit);
+    if (model) params.append('model', model);
+    if (vitalityFlag) params.append('vitalityFlag', vitalityFlag);
 
     const response = await apiClient.get<WrapperListLicenseParameterDTO>(`/license-parameters?${params.toString()}`);
 

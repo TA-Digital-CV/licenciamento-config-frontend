@@ -37,9 +37,9 @@ export async function PUT(
       return NextResponse.json({ error: 'Legislation ID is required' }, { status: 400 });
     }
 
-    if (!body.title || !body.legislationType || !body.jurisdiction) {
+    if (!body.title || !body.legislationType || !body.scope) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, legislationType, jurisdiction' },
+        { error: 'Missing required fields: title, legislationType, scope' },
         { status: 400 },
       );
     }

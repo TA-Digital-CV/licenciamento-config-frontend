@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { OptionResponseDTO, OptionRequestDTO } from '../types';
+import { OptionResponseDTO, OptionRequestDTO, WrapperListOptionsDTO } from '../types';
 
 // Tipos para respostas da API
 export interface ApiResponse<T = any> {
@@ -64,8 +64,9 @@ export const loadOptionsByCode = async (
   ccode: string,
   signal?: AbortSignal,
 ): Promise<OptionResponseDTO[]> => {
-  const url = `/api/options/by-code/${encodeURIComponent(ccode)}`;
-  return apiRequest<OptionResponseDTO[]>(url, {}, signal);
+  const url = `/api/options?ccode=${encodeURIComponent(ccode)}`;
+  const response = await apiRequest<WrapperListOptionsDTO>(url, {}, signal);
+  return response.content || [];
 };
 
 /**
@@ -75,8 +76,9 @@ export const loadActiveOptionsByCode = async (
   ccode: string,
   signal?: AbortSignal,
 ): Promise<OptionResponseDTO[]> => {
-  const url = `/api/options/by-code/${encodeURIComponent(ccode)}?active=true`;
-  return apiRequest<OptionResponseDTO[]>(url, {}, signal);
+  const url = `/api/options?ccode=${encodeURIComponent(ccode)}&active=true`;
+  const response = await apiRequest<WrapperListOptionsDTO>(url, {}, signal);
+  return response.content || [];
 };
 
 /**
@@ -86,7 +88,7 @@ export const checkOptionCodeExists = async (
   ccode: string,
   signal?: AbortSignal,
 ): Promise<{ exists: boolean }> => {
-  const url = `/api/options/by-code/${encodeURIComponent(ccode)}?action=existsByCcode`;
+  const url = `/api/options?ccode=${encodeURIComponent(ccode)}&action=existsByCcode`;
   return apiRequest<{ exists: boolean }>(url, {}, signal);
 };
 

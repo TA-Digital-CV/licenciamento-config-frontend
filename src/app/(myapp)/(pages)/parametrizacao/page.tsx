@@ -14,9 +14,9 @@ import LicenceTypelist from '@/components/licencetypelist';
 
 export default function PageLicenciamentoParametrizacao() {
   const TABS = [
-    { id: 'sectors', label: 'Sectors' },
-    { id: 'categories', label: 'Categories' },
-    { id: 'licence-types', label: 'Licence Types' },
+    { id: 'sectors', label: 'Setores' },
+    { id: 'categories', label: 'Categorias' },
+    { id: 'licence-types', label: 'Tipos de Licenças' },
   ] as const;
 
   type TabId = (typeof TABS)[number]['id'];
@@ -154,7 +154,7 @@ export default function PageLicenciamentoParametrizacao() {
           hidden={active !== 'sectors'}
         >
           <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="text-base font-semibold mb-2">Sectors</h2>
+            <h2 className="text-base font-semibold mb-2">Setores</h2>
             <div className="mb-4 text-sm text-muted-foreground">
               Gestão de setores económicos e respetivos tipos.
             </div>
@@ -171,7 +171,7 @@ export default function PageLicenciamentoParametrizacao() {
           hidden={active !== 'categories'}
         >
           <div className="rounded-lg border border-border bg-card p-4">
-            <h2 className="text-base font-semibold mb-2">Categories</h2>
+            <h2 className="text-base font-semibold mb-2">Categorias</h2>
             <div className="mb-4 text-sm text-muted-foreground">
               Estrutura hierárquica de categorias por setor.
             </div>

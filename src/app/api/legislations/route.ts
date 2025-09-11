@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active') || 'true';
     const legislationType = searchParams.get('legislationType');
-    const jurisdiction = searchParams.get('jurisdiction');
+    const licenseTypeId = searchParams.get('licenseTypeId');
+    const name = searchParams.get('name');
     const pageNumber = searchParams.get('pageNumber') || '0';
     const pageSize = searchParams.get('pageSize') || '20';
 
@@ -23,7 +24,8 @@ export async function GET(request: NextRequest) {
     });
 
     if (legislationType) params.append('legislationType', legislationType);
-    if (jurisdiction) params.append('jurisdiction', jurisdiction);
+    if (licenseTypeId) params.append('licenseTypeId', licenseTypeId);
+    if (name) params.append('name', name);
 
     const response = await apiClient.get<WrapperListLegislationDTO>(`/legislations?${params.toString()}`);
 
@@ -38,9 +40,9 @@ export async function POST(request: NextRequest) {
   try {
     const body: LegislationRequestDTO = await request.json();
 
-    if (!body.title || !body.legislationType || !body.jurisdiction) {
+    if (!body.title || !body.legislationType) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, legislationType, jurisdiction' },
+        { error: 'Missing required fields: title, legislationType' },
         { status: 400 },
       );
     }

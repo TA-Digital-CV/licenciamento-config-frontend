@@ -5,9 +5,9 @@ import {
 } from '../../../../(myapp)/types/licence-types.types';
 
 // PATCH /api/licence-types/[id]/enable
-export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params;
+    const { id } = params;
 
     if (!id) {
       return NextResponse.json({ error: 'License type ID is required' }, { status: 400 });
@@ -29,9 +29,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       sortOrder: 0,
       categoryId: response.categoryId,
       categoryName: undefined, // Will be populated by frontend if needed
-      licensingModel: response.licensingModelKey,
+      licensingModel: response.licensingModel,
       validityPeriod: response.validityPeriod,
-      validityUnit: response.validityUnitKey,
+      validityUnit: response.validityUnit,
       renewable: response.renewable,
       autoRenewal: response.autoRenewal,
       requiresInspection: response.requiresInspection,

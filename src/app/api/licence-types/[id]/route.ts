@@ -6,9 +6,9 @@ import {
 } from '../../../(myapp)/types/licence-types.types';
 
 // GET /api/licence-types/[id]
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const response = await apiClient.get<LicenseTypeResponseDTO>(`/license-types/${id}`);
 
     // Transform backend response to match frontend expectations
@@ -20,9 +20,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       active: true,
       sortOrder: 0,
       categoryId: response.categoryId,
-      licensingModel: response.licensingModelKey,
+      licensingModel: response.licensingModel,
       validityPeriod: response.validityPeriod,
-      validityUnit: response.validityUnitKey,
+      validityUnit: response.validityUnit,
       renewable: response.renewable,
       autoRenewal: response.autoRenewal,
       requiresInspection: response.requiresInspection,
@@ -44,9 +44,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 // PUT /api/licence-types/[id]
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const body = await request.json();
 
     // Check if this is an enable/disable operation
@@ -60,7 +60,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         code: response.code,
         active: true, // Not available in backend DTO, default to true
         categoryId: response.categoryId,
-        licensingModel: response.licensingModelKey,
+        licensingModel: response.licensingModel,
         renewable: response.renewable,
         validityPeriod: response.validityPeriod,
         createdAt: new Date().toISOString(),
@@ -78,7 +78,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         code: response.code,
         active: true, // Not available in backend DTO, default to true
         categoryId: response.categoryId,
-        licensingModel: response.licensingModelKey,
+        licensingModel: response.licensingModel,
         renewable: response.renewable,
         validityPeriod: response.validityPeriod,
         createdAt: new Date().toISOString(),
@@ -122,9 +122,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       active: true,
       sortOrder: 0,
       categoryId: response.categoryId,
-      licensingModel: response.licensingModelKey,
+      licensingModel: response.licensingModel,
       validityPeriod: response.validityPeriod,
-      validityUnit: response.validityUnitKey,
+      validityUnit: response.validityUnit,
       renewable: response.renewable,
       autoRenewal: response.autoRenewal,
       requiresInspection: response.requiresInspection,

@@ -18,7 +18,7 @@ import {
 } from '@igrp/igrp-framework-react-design-system';
 import { useOptionsActions } from '@/app/(myapp)/actions/options.actions';
 import { transformOptionToFormItem, loadOptionById, updateOptionById } from '@/app/(myapp)/functions/api.functions';
-import { validateFormData, optionFormSchema } from '@/app/(myapp)/functions/validation.functions';
+import { optionFormSchema } from '@/app/(myapp)/functions/validation.functions';
 import { OptionResponseDTO, OptionRequestDTO } from '@/app/(myapp)/types/options.types';
 
 // Helper function to safely stringify objects with circular references

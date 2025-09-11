@@ -41,7 +41,7 @@ export const useLicenseTypesActions = (id?: string) => {
   const router = useRouter();
   const { igrpToast } = useIGRPToast();
 
-  // Valores padrão para novo tipo de licença
+  // Valores padrão para o formulário
   const defaultValues: LicenceTypeFormData = {
     name: '',
     code: '',
@@ -58,6 +58,7 @@ export const useLicenseTypesActions = (id?: string) => {
     currencyCode: 'CVE',
     active: true,
     metadata: '',
+    maxProcessingDays: 1,
   };
 
   // Estado do componente
@@ -351,7 +352,12 @@ export const licenseTypesActions = {
   },
 
   async loadLicensingModels() {
-    return loadActiveOptionsByCode('LICENSING_MODEL');
+    // Retorna os novos modelos de licenciamento
+    return [
+      { value: 'PROVISORIO', label: 'Provisório' },
+      { value: 'DEFINITIVO', label: 'Definitivo' },
+      { value: 'HIBRIDO', label: 'Híbrido' }
+    ];
   },
 
   async loadValidityUnits() {

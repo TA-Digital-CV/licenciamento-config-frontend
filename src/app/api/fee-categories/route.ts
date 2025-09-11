@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active') || 'true';
-    const feeType = searchParams.get('feeType');
+    const name = searchParams.get('name');
+    const code = searchParams.get('code');
+    const categoryType = searchParams.get('categoryType');
     const pageNumber = searchParams.get('pageNumber') || '0';
     const pageSize = searchParams.get('pageSize') || '20';
 
@@ -21,7 +23,9 @@ export async function GET(request: NextRequest) {
       active,
     });
 
-    if (feeType) params.append('feeType', feeType);
+    if (name) params.append('name', name);
+    if (code) params.append('code', code);
+    if (categoryType) params.append('categoryType', categoryType);
 
     const response = await apiClient.get<WrapperListFeeCategoryDTO>(`/fee-categories?${params.toString()}`);
 

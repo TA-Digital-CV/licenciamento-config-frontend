@@ -10,8 +10,10 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active') || 'true';
-    const processTypeId = searchParams.get('processTypeId');
+    const licenseTypeProcessTypeId = searchParams.get('licenseTypeProcessTypeId');
     const feeCategoryId = searchParams.get('feeCategoryId');
+    const name = searchParams.get('name');
+    const feeType = searchParams.get('feeType');
     const pageNumber = searchParams.get('pageNumber') || '0';
     const pageSize = searchParams.get('pageSize') || '20';
 
@@ -22,8 +24,10 @@ export async function GET(request: NextRequest) {
       active,
     });
 
-    if (processTypeId) params.append('processTypeId', processTypeId);
+    if (licenseTypeProcessTypeId) params.append('licenseTypeProcessTypeId', licenseTypeProcessTypeId);
     if (feeCategoryId) params.append('feeCategoryId', feeCategoryId);
+    if (name) params.append('name', name);
+    if (feeType) params.append('feeType', feeType);
 
     const response = await apiClient.get<WrapperListProcessTypeFeeDTO>(`/process-type-fees?${params.toString()}`);
 

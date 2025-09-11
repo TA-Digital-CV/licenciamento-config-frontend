@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/app/(myapp)/lib/api-client';
 import {
-  WrapperListLicenseProcessTypesDTO,
+  WrapperListLicenseProcessTypeDTO,
   LicenseProcessTypeRequestDTO,
   LicenseProcessTypeResponseDTO,
 } from '@/app/(myapp)/types/license-process-types.types';
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, { params }: { params: { licenseTypeId: string } }) {
   try {
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active') || 'true';
-    const licenseTypeId = searchParams.get('licenseTypeId');
     const processType = searchParams.get('processType');
     const pageNumber = searchParams.get('pageNumber') || '0';
     const pageSize = searchParams.get('pageSize') || '20';
 
     // Build query parameters matching backend controller
-    const params = new URLSearchParams({
+    const queryParams = new URLSearchParams({
       pageNumber,
       pageSize,
       active,
     });
 
-    if (licenseTypeId) params.append('licenseTypeId', licenseTypeId);
-    if (processType) params.append('processType', processType);
+    if (processType) queryParams.append('processType', processType);
 
-    const response = await apiClient.get<WrapperListLicenseProcessTypesDTO>(`/license-process-types?${params.toString()}`);
+    const response = await apiClient.get<WrapperListLicenseProcessTypeDTO>(
+      `/license-types/${params.licenseTypeId}/process-types?${queryParams.toString()}`
+    );
 
     return NextResponse.json(response);
   } catch (error) {
@@ -34,18 +34,27 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest, { params }: { params: { licenseTypeId: string } }) {
   try {
     const body: LicenseProcessTypeRequestDTO = await request.json();
 
-    if (!body.name || !body.processType || !body.licenseTypeId) {
+    if (!body.processName || !body.processCode) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, processType, licenseTypeId' },
+        { error: 'Missing required fields: processName, processCode' },
         { status: 400 },
       );
     }
 
-    const response = await apiClient.post<LicenseProcessTypeResponseDTO>('/license-process-types', body);
+    // Add licenseTypeId from URL params to the body
+    const requestBody = {
+      ...body,
+      licenseTypeId: params.licenseTypeId,
+    };
+
+    const response = await apiClient.post<LicenseProcessTypeResponseDTO>(
+      `/license-types/${params.licenseTypeId}/process-types`,
+      requestBody
+    );
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
