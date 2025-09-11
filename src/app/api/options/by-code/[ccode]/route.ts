@@ -110,13 +110,92 @@ export async function PUT(
       return NextResponse.json({ error: 'Body must be an array of options' }, { status: 400 });
     }
 
-    // Update options for this ccode and locale
-    const response = await apiClient.put<OptionResponseDTO[]>(
-      `/options/${ccode}?locale=${locale}`,
-      { options: body },
+    // 1) Tentativa de atualização em lote (bulk)
+    try {
+      const bulkResponse = await apiClient.put<OptionResponseDTO[]>(
+        `/options/${ccode}?locale=${locale}`,
+        body as unknown as Record<string, unknown>,
+      );
+      return NextResponse.json(bulkResponse ?? { success: true });
+    } catch (bulkError) {
+      console.warn('Bulk update failed, falling back to per-item upsert strategy:', bulkError);
+    }
+
+    // 2) Fallback: upsert item-a-item e remoção dos ausentes
+    // Carregar existentes para mapear IDs
+    const existingResp: any = await apiClient.get<any>(
+      `/options?${new URLSearchParams({ ccode, pageNumber: '0', pageSize: '1000' }).toString()}`,
     );
 
-    return NextResponse.json(response);
+    const existingItems: any[] = Array.isArray(existingResp?.content)
+      ? existingResp.content
+      : Array.isArray(existingResp)
+        ? existingResp
+        : [];
+
+    const existingMap = new Map<string, any>();
+    existingItems.forEach((it: any) => {
+      const composite = `${(it?.ckey ?? '').toString().trim()}::${(it?.locale ?? '').toString().trim()}`;
+      existingMap.set(composite, it);
+    });
+
+    const requestedKeys = new Set<string>();
+    const results: any[] = [];
+
+    // Upsert dos itens enviados
+    for (const item of body) {
+      const composite = `${(item?.ckey ?? '').toString().trim()}::${(item?.locale ?? '').toString().trim()}`;
+      requestedKeys.add(composite);
+
+      const payload = {
+        ccode,
+        ckey: (item?.ckey ?? '').toString().trim(),
+        cvalue: (item?.cvalue ?? '').toString().trim(),
+        locale: (item?.locale ?? 'pt-CV').toString().trim(),
+        sortOrder:
+          typeof item?.sortOrder === 'number'
+            ? item.sortOrder
+            : item?.sortOrder
+            ? Number(item.sortOrder)
+            : 0,
+        active: item?.active !== false,
+        description: typeof item?.description === 'string' ? item.description : '',
+        metadata: (() => {
+          const md = item?.metadata;
+          if (md === null || md === undefined || md === '') return null;
+          if (typeof md === 'string') {
+            try {
+              return JSON.parse(md);
+            } catch {
+              return md;
+            }
+          }
+          return md;
+        })(),
+      } as Record<string, unknown>;
+
+      const existing = existingMap.get(composite);
+      if (existing && existing.id) {
+        const updated = await apiClient.put<OptionResponseDTO>(`/options/${existing.id}`, payload);
+        results.push(updated);
+      } else {
+        const created = await apiClient.post<OptionResponseDTO>('/options', payload);
+        results.push(created);
+      }
+    }
+
+    // Remover itens que existiam e não foram enviados agora (sync hard)
+    for (const [composite, it] of existingMap.entries()) {
+      if (!requestedKeys.has(composite) && it?.id) {
+        try {
+          await apiClient.delete(`/options/${it.id}`);
+        } catch (delErr) {
+          console.warn('Failed to delete removed option id=', it.id, delErr);
+        }
+      }
+    }
+
+    return NextResponse.json(results);
   } catch (error) {
     console.error('Error updating options:', error);
     return NextResponse.json({ error: 'Failed to update options' }, { status: 500 });

@@ -15,6 +15,7 @@ export interface ApiResponse<T> {
 export interface ApiError {
   message: string;
   status: number;
+  body?: string;
 }
 
 class ApiClient {
@@ -39,7 +40,17 @@ class ApiClient {
       const response = await fetch(url, config);
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorBody = '';
+        try {
+          errorBody = await response.text();
+        } catch {}
+        const err: ApiError = {
+          message: `HTTP ${response.status}: ${response.statusText}${errorBody ? ` - ${errorBody}` : ''}`,
+          status: response.status,
+          body: errorBody,
+        };
+        console.error(`API request failed: ${url}`, err);
+        throw err as unknown as Error;
       }
 
       // Handle empty responses safely (e.g., 204 No Content)
@@ -61,7 +72,7 @@ class ApiClient {
         return undefined as unknown as T;
       }
     } catch (error) {
-      console.error(`API request failed: ${url}`, error);
+      // Errors already logged above; just rethrow
       throw error;
     }
   }
