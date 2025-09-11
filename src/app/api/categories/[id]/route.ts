@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '../../../(myapp)/lib/api-client';
 import { CategoryResponseDTO, CategoryRequestDTO } from '../../../(myapp)/types/categories.types';
@@ -12,14 +13,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const transformedResponse = {
       id: response.id,
       name: response.name,
-      description: '',
+      description: (response as any)?.description ?? '',
       code: response.code,
-      active: true,
+      active: response.active,
       level: response.level,
-      sortOrder: 0,
+      sortOrder: (response as any)?.level ?? 0,
       metadata: response.metadata,
       path: response.path,
-      parentId: null,
+      parentId: (response as any)?.parentId ?? null,
       sectorId: response.sectorId,
       sectorName: response.sectorName,
       createdAt: new Date().toISOString(),
@@ -48,14 +49,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const transformedResponse = {
         id: response.id,
         name: response.name,
-        description: '',
+        description: (response as any)?.description ?? '',
         code: response.code,
-        active: true,
+        active: false,
         level: response.level,
-        sortOrder: 0,
+        sortOrder: (response as any)?.level ?? 0,
         metadata: response.metadata,
         path: response.path,
-        parentId: null,
+        parentId: (response as any)?.parentId ?? null,
         sectorId: response.sectorId,
         sectorName: response.sectorName,
         createdAt: new Date().toISOString(),
@@ -73,14 +74,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       const transformedResponse = {
         id: response.id,
         name: response.name,
-        description: '', // Not available in backend DTO
+        description: (response as any)?.description ?? '',
         code: response.code,
-        active: true, // Not available in backend DTO, default to true
+        active: (response as CategoryResponseDTO).active,
         level: response.level,
-        sortOrder: 0, // Not available in backend DTO, default to 0
+        sortOrder: (response as any)?.level ?? 0,
         metadata: response.metadata,
         path: response.path,
-        parentId: null, // Derived from path or children structure
+        parentId: (response as any)?.parentId ?? null,
         sectorId: response.sectorId,
         sectorName: response.sectorName,
         createdAt: new Date().toISOString(),
@@ -94,36 +95,53 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const categoryData: CategoryRequestDTO = {
       name: body.name,
       description: body.description,
-      code: body.code, // Note: code might be immutable on backend
-      active: body.active,
+      code: body.code,
+      // active omitido: usar ações específicas enable/disable
       sortOrder: body.sortOrder,
-      metadata: body.metadata,
-      parentId: body.parentId,
+      metadata: body.metadata && typeof body.metadata === 'object' ? body.metadata : undefined,
+      parentId: body.parentId ?? undefined,
       sectorId: body.sectorId,
     };
 
-    const response = await apiClient.put<CategoryResponseDTO>(`/categories/${id}`, categoryData);
+    let response = await apiClient.put<CategoryResponseDTO | undefined>(`/categories/${id}`, categoryData);
+
+    // Alguns backends retornam 204/sem body no update. Buscar a categoria para construir resposta.
+    if (!response || !(response as any)?.id) {
+      response = await apiClient.get<CategoryResponseDTO>(`/categories/${id}`);
+    }
 
     const transformedResponse = {
-      id: response.id,
-      name: response.name,
-      description: '', // Not available in backend DTO
-      code: response.code,
-      active: true, // Not available in backend DTO, default to true
-      level: response.level,
-      sortOrder: 0, // Not available in backend DTO, default to 0
-      metadata: response.metadata,
-      path: response.path,
-      parentId: null, // Derived from path or children structure
-      sectorId: response.sectorId,
-      sectorName: response.sectorName,
+      id: (response as CategoryResponseDTO).id,
+      name: (response as CategoryResponseDTO).name,
+      description: ((response as any))?.description ?? '',
+      code: (response as CategoryResponseDTO).code,
+      active: true,
+      level: (response as CategoryResponseDTO).level,
+      sortOrder: ((response as any))?.level ?? 0,
+      metadata: (response as CategoryResponseDTO).metadata,
+      path: (response as CategoryResponseDTO).path,
+      parentId: ((response as any))?.parentId ?? null,
+      sectorId: (response as CategoryResponseDTO).sectorId,
+      sectorName: (response as CategoryResponseDTO).sectorName,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     return NextResponse.json(transformedResponse);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating category:', error);
-    return NextResponse.json({ message: 'Failed to update category' }, { status: 500 });
+    const status = error?.status || 500;
+    let details: any = undefined;
+    try {
+      if (error?.body) {
+        details = JSON.parse(error.body);
+      }
+    } catch {
+      details = error?.body || undefined;
+    }
+    return NextResponse.json(
+      { message: 'Failed to update category', details },
+      { status },
+    );
   }
 }

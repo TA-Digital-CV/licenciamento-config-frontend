@@ -14,6 +14,12 @@ import {
   IGRPDataTableButtonLink,
 } from '@igrp/igrp-framework-react-design-system';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useSearchParams } from 'next/navigation';
+import { loadActiveOptionsByCode, transformOptionsToSelectItems } from '@/app/(myapp)/functions/api.functions';
+import { Power, PowerOff } from 'lucide-react';
+
+// Constante para status
+const STATUS = { ALL: 'all', ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' } as const;
 
 export type LicenceType = {
   id: string;
@@ -34,36 +40,102 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { igrpToast } = useIGRPToast();
+  const searchParams = useSearchParams();
 
-  // New: filters state
+  // Filters state
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  // New: category and dossier filters
+  const [statusFilter, setStatusFilter] = useState<string>(STATUS.ACTIVE);
   const [categoryFilter, setCategoryFilter] = useState<string>('');
-  const [dossierFilter, setDossierFilter] = useState<'all' | 'yes' | 'no'>('all');
   const [categoryOptions, setCategoryOptions] = useState<{ value: string; label: string }[]>([]);
   const [sectorFilter, setSectorFilter] = useState<string>('');
   const [sectorOptions, setSectorOptions] = useState<{ value: string; label: string }[]>([]);
+  const [statusOptions, setStatusOptions] = useState<{ value: string; label: string }[]>([
+    { value: STATUS.ACTIVE, label: 'Ativo' },
+    { value: STATUS.INACTIVE, label: 'Inativo' },
+  ]);
+  const [pendingId, setPendingId] = useState<string | null>(null);
   const [categoriesMap, setCategoriesMap] = useState<
     Record<string, { sectorId?: string; sectorName?: string }>
   >({});
+  const [loadingCategories, setLoadingCategories] = useState<boolean>(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
 
+  // Sync filters from URL query params (categoryId, status)
+  useEffect(() => {
+    const qpCategory = searchParams.get('categoryId') || '';
+    const raw = searchParams.get('status') || '';
+    const up = raw.toUpperCase();
+    if (qpCategory) setCategoryFilter(qpCategory);
+    if ([STATUS.ACTIVE, STATUS.INACTIVE].includes(up as any)) {
+      setStatusFilter(up);
+    } else if (up === 'ALL') {
+      setStatusFilter(STATUS.ALL);
+    }
+  }, [searchParams]);
+
+  // Also honor prop categoryId when provided/changed
+  useEffect(() => {
+    if (categoryId) setCategoryFilter(categoryId);
+  }, [categoryId]);
+
+  // Load STATUS options dynamically
   useEffect(() => {
     const controller = new AbortController();
-    async function fetchCategories() {
+    (async () => {
       try {
-        const res = await fetch('/api/categories?active=true', { signal: controller.signal });
-        const data = await res.json();
-        const opts = (data.content || []).map((c: any) => ({ value: c.id, label: c.name }));
-        setCategoryOptions(opts);
-        const map: Record<string, { sectorId?: string; sectorName?: string }> = {};
-        (data.content || []).forEach((c: any) => {
-          map[c.id] = { sectorId: c.sectorId, sectorName: c.sectorName };
-        });
-        setCategoriesMap(map);
-      } catch (_) {}
+        const data = await loadActiveOptionsByCode('STATUS', controller.signal);
+        const mapped = transformOptionsToSelectItems(data).filter((o) =>
+          [STATUS.ACTIVE, STATUS.INACTIVE].includes(String(o.value).toUpperCase() as any),
+        );
+        if (mapped.length) setStatusOptions(mapped);
+      } catch (_) {
+        // keep fallback options
+      }
+    })();
+    return () => controller.abort();
+  }, []);
+
+  // Função auxiliar para carregar categorias baseadas no setor
+  const loadCategoriesBySector = async (sectorId: string | null, signal?: AbortSignal) => {
+    try {
+      setLoadingCategories(true);
+      setCategoryError(null);
+      
+      const params = new URLSearchParams();
+      params.set('active', 'true');
+      if (sectorId) {
+        params.set('sectorId', sectorId);
+      }
+      
+      const res = await fetch(`/api/categories?${params.toString()}`, { signal });
+      if (!res.ok) {
+        throw new Error(`Erro ao carregar categorias: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      const opts = (data.content || []).map((c: any) => ({ value: c.id, label: c.name }));
+      setCategoryOptions(opts);
+      
+      const map: Record<string, { sectorId?: string; sectorName?: string }> = {};
+      (data.content || []).forEach((c: any) => {
+        map[c.id] = { sectorId: c.sectorId, sectorName: c.sectorName };
+      });
+      setCategoriesMap(map);
+    } catch (err: any) {
+      if (err.name === 'AbortError') return;
+      const message = err?.message || 'Erro ao carregar categorias';
+      setCategoryError(message);
+      setCategoryOptions([]);
+      setCategoriesMap({});
+    } finally {
+      setLoadingCategories(false);
     }
-    fetchCategories();
+  };
+
+  // Carregar todas as categorias inicialmente
+  useEffect(() => {
+    const controller = new AbortController();
+    loadCategoriesBySector(null, controller.signal);
     return () => controller.abort();
   }, []);
 
@@ -82,6 +154,24 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
     return () => controller.abort();
   }, []);
 
+  // Filtro contextualizado: carregar categorias quando o setor muda
+  useEffect(() => {
+    const controller = new AbortController();
+    
+    // Limpar filtro de categoria quando setor muda
+    setCategoryFilter('');
+    
+    // Carregar categorias baseadas no setor selecionado
+    if (sectorFilter) {
+      loadCategoriesBySector(sectorFilter, controller.signal);
+    } else {
+      // Se nenhum setor selecionado, carregar todas as categorias
+      loadCategoriesBySector(null, controller.signal);
+    }
+    
+    return () => controller.abort();
+  }, [sectorFilter]);
+
   useEffect(() => {
     const controller = new AbortController();
 
@@ -90,7 +180,7 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         setLoading(true);
         setError(null);
         const params = new URLSearchParams();
-        if (statusFilter !== 'all') params.set('active', String(statusFilter === 'active'));
+        if (statusFilter !== STATUS.ALL) params.set('active', String(String(statusFilter).toUpperCase() === STATUS.ACTIVE));
         if (categoryFilter) params.set('categoryId', categoryFilter);
         const query = params.toString();
         const res = await fetch(`/api/licence-types${query ? `?${query}` : ''}`, {
@@ -113,6 +203,35 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
     fetchLicenceTypes();
     return () => controller.abort();
   }, [categoryId, statusFilter, categoryFilter]);
+
+  // Toggle active/inactive for a row and keep list consistent with current filters
+  const toggleActive = async (row: LicenceType) => {
+    try {
+      setPendingId(row.id);
+      const action = row.active ? 'disable' : 'enable';
+      const res = await fetch(`/api/licence-types/${row.id}/${action}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error(`Erro ao ${action === 'enable' ? 'ativar' : 'desativar'} tipo de licença`);
+      
+      // Update local state
+      setLicenceTypes(prev => prev.map(item => 
+        item.id === row.id ? { ...item, active: !item.active } : item
+      ));
+      
+      igrpToast({
+        title: 'Sucesso',
+        description: `Tipo de licença ${action === 'enable' ? 'ativado' : 'desativado'} com sucesso`,
+        type: 'default'
+      });
+    } catch (err: any) {
+      const message = err?.message || 'Erro ao alterar estado do tipo de licença';
+      igrpToast({ title: 'Erro', description: message, type: 'default' });
+    } finally {
+      setPendingId(null);
+    }
+  };
 
   const columns: ColumnDef<LicenceType>[] = useMemo(
     () => [
@@ -140,7 +259,6 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         header: 'Categoria',
         cell: ({ row }) => <div className="text-sm">{row.getValue('categoryName') || '-'}</div>,
       },
-      // New: Setor placeholder column (awaiting backend support)
       {
         id: 'sector',
         header: 'Setor',
@@ -148,24 +266,6 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
           const catId = row.original.categoryId as string | undefined;
           const sectorName = (catId && categoriesMap[catId]?.sectorName) || '-';
           return <div className="text-sm">{sectorName}</div>;
-        },
-      },
-      // New: Tem Dossier (from metadata.hasDossier)
-      {
-        id: 'hasDossier',
-        header: 'Tem Dossier',
-        cell: ({ row }) => {
-          const has = Boolean((row.original?.metadata as any)?.hasDossier);
-          return (
-            <div
-              className={cn(
-                'text-xs px-2 py-1 rounded-full',
-                has ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700',
-              )}
-            >
-              {has ? 'Sim' : 'Não'}
-            </div>
-          );
         },
       },
       {
@@ -195,6 +295,8 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         header: 'Ações',
         cell: ({ row }) => {
           const has = Boolean((row.original?.metadata as any)?.hasDossier);
+          const isActive = row.original.active;
+          const isPending = pendingId === row.original.id;
           return (
             <div className="flex items-center gap-2">
               <IGRPDataTableButtonLink
@@ -209,19 +311,34 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
                 icon="Folder"
                 variant={has ? 'ghost' : 'secondary'}
               />
+              <button
+                type="button"
+                onClick={() => toggleActive(row.original)}
+                disabled={isPending}
+                className={cn(
+                  'rounded border p-1',
+                  isActive
+                    ? 'border-orange-300 text-orange-700 hover:bg-orange-50'
+                    : 'border-green-300 text-green-700 hover:bg-green-50',
+                  isPending && 'opacity-50 cursor-not-allowed',
+                )}
+                aria-label={isActive ? 'Desativar' : 'Ativar'}
+                title={isActive ? 'Desativar' : 'Ativar'}
+              >
+                {isActive ? <PowerOff size={16} /> : <Power size={16} />}
+              </button>
             </div>
           );
         },
       },
     ],
-    [categoriesMap],
+    [categoriesMap, pendingId, toggleActive],
   );
 
   // New: client-side search on name and code
   // Removed duplicate filteredData useMemo that caused collision
 
-  // Extend client-side filtering with dossierFilter
-  // New: client-side search + dossier filter combined
+  // Client-side search and sector filtering
   const filteredData = useMemo(() => {
     const q = search.trim().toLowerCase();
     let base = licenceTypes;
@@ -229,10 +346,6 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
       base = base.filter(
         (item: any) => item.name?.toLowerCase().includes(q) || item.code?.toLowerCase().includes(q),
       );
-    }
-    if (dossierFilter !== 'all') {
-      const want = dossierFilter === 'yes';
-      base = base.filter((item: any) => Boolean(item?.metadata?.hasDossier) === want);
     }
     if (sectorFilter) {
       base = base.filter((item: any) => {
@@ -242,7 +355,7 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
       });
     }
     return base;
-  }, [licenceTypes, search, dossierFilter, sectorFilter, categoriesMap]);
+  }, [licenceTypes, search, sectorFilter, categoriesMap]);
 
   if (loading) {
     return <div className="p-4 text-sm text-muted-foreground">A carregar tipos de licença...</div>;
@@ -284,35 +397,35 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
             className="rounded border px-2 py-1 text-sm bg-background"
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
+            disabled={loadingCategories}
           >
-            <option value="">Todas</option>
+            <option value="">
+              {loadingCategories ? 'A carregar...' : sectorFilter ? 'Todas do setor' : 'Todas'}
+            </option>
             {categoryOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
           </select>
+          {categoryError && (
+            <div className="text-xs text-red-600 mt-1">
+              {categoryError}
+            </div>
+          )}
 
           <label className="text-sm text-muted-foreground">Estado</label>
           <select
             className="rounded border px-2 py-1 text-sm bg-background"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="all">Todos</option>
-            <option value="active">Ativo</option>
-            <option value="inactive">Inativo</option>
-          </select>
-
-          <label className="text-sm text-muted-foreground">Possui Dossier</label>
-          <select
-            className="rounded border px-2 py-1 text-sm bg-background"
-            value={dossierFilter}
-            onChange={(e) => setDossierFilter(e.target.value as any)}
-          >
-            <option value="all">Todos</option>
-            <option value="yes">Sim</option>
-            <option value="no">Não</option>
+            <option value={STATUS.ALL}>Todos</option>
+            {statusOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
           </select>
         </div>
       </div>

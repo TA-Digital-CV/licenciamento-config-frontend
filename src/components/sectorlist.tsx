@@ -32,6 +32,35 @@ export type Sector = {
   updatedAt?: string;
 };
 
+// Helpers: estados e mapeamentos
+const STATUS = { ALL: 'all', ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' } as const;
+type StatusFilter = typeof STATUS[keyof typeof STATUS];
+
+function mapStatusFilterToActiveParam(status: string): string | null {
+  const up = String(status).toUpperCase();
+  if (up === STATUS.ACTIVE) return 'true';
+  if (up === STATUS.INACTIVE) return 'false';
+  return null; // all
+}
+
+function resolveEffectiveSectorType(typeFilter: string, propSectorType?: string): string {
+  return typeFilter !== 'all' ? typeFilter : propSectorType || '';
+}
+
+function getSectorTypeRaw(s: Sector): string {
+  return (s.sectorTypeKey || s.sectorTypeValue || s.sectorType || '') as string;
+}
+
+function getSectorTypeLabelFromOptions(raw: string, options: { value: string; label: string }[]) {
+  const opt = options.find((o) => String(o.value) === String(raw));
+  return opt?.label || raw || '';
+}
+
+function computeIncludeByType(updated: Sector, effectiveType: string): boolean {
+  if (!effectiveType) return true;
+  return String(getSectorTypeRaw(updated)) === String(effectiveType);
+}
+
 export default function Sectorlist({ sectorType }: { sectorType?: string }) {
   const [sectors, setSectors] = useState<Sector[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -42,7 +71,7 @@ export default function Sectorlist({ sectorType }: { sectorType?: string }) {
   // New: filters state
   const [search, setSearch] = useState<string>('');
   // Default: show only active sectors initially
-  const [statusFilter, setStatusFilter] = useState<string>('ACTIVE'); // values: 'all' | 'ACTIVE' | 'INACTIVE'
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(STATUS.ACTIVE); // values: 'all' | 'ACTIVE' | 'INACTIVE'
   const [statusOptions, setStatusOptions] = useState<{ value: string; label: string }[]>([
     { value: 'ACTIVE', label: 'Ativo' },
     { value: 'INACTIVE', label: 'Inativo' },
@@ -107,9 +136,8 @@ export default function Sectorlist({ sectorType }: { sectorType?: string }) {
 
   // helper: compute sector type label from options
   const getSectorTypeLabel = (s: Sector) => {
-    const raw = (s.sectorTypeKey || s.sectorTypeValue || s.sectorType || '') as string;
-    const opt = typeOptions.find((o) => String(o.value) === String(raw));
-    return opt?.label || raw || '';
+    const raw = getSectorTypeRaw(s);
+    return getSectorTypeLabelFromOptions(raw, typeOptions);
   };
 
   // Fetch with applied filters
@@ -122,12 +150,12 @@ export default function Sectorlist({ sectorType }: { sectorType?: string }) {
         setError(null);
         const params = new URLSearchParams();
         // Map statusFilter to boolean active param
-        if (statusFilter !== 'all') {
-          const isActive = String(statusFilter).toUpperCase() === 'ACTIVE';
-          params.set('active', String(isActive));
+        const activeParam = mapStatusFilterToActiveParam(statusFilter);
+        if (activeParam !== null) {
+          params.set('active', activeParam);
         }
         // Prefer explicit typeFilter; fallback to prop sectorType if provided
-        const effectiveType = typeFilter !== 'all' ? typeFilter : (sectorType || '');
+        const effectiveType = resolveEffectiveSectorType(typeFilter, sectorType);
         if (effectiveType) params.set('sectorType', effectiveType);
         const query = params.toString();
         const res = await fetch(`/api/sectors${query ? `?${query}` : ''}`, {
@@ -167,18 +195,14 @@ export default function Sectorlist({ sectorType }: { sectorType?: string }) {
       setSectors((prev) => {
         // Determine if updated row matches current status filter
         const includeByStatus =
-          statusFilter === 'all'
+          statusFilter === STATUS.ALL
             ? true
-            : statusFilter === 'ACTIVE'
+            : statusFilter === STATUS.ACTIVE
             ? updated.active === true
             : updated.active === false; // INACTIVE
 
-        const includeByType = (() => {
-          const effectiveType = typeFilter !== 'all' ? typeFilter : (sectorType || '');
-          if (!effectiveType) return true;
-          const raw = (updated.sectorTypeKey || updated.sectorTypeValue || updated.sectorType || '') as string;
-          return String(raw) === String(effectiveType);
-        })();
+        const effectiveType = resolveEffectiveSectorType(typeFilter, sectorType);
+        const includeByType = computeIncludeByType(updated, effectiveType);
 
         if (!includeByStatus || !includeByType) {
           // Remove if it no longer matches filters
@@ -360,7 +384,7 @@ export default function Sectorlist({ sectorType }: { sectorType?: string }) {
           <select
             className="rounded border px-2 py-1 text-sm bg-background"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
           >
             <option value="all">Todos</option>
             {statusOptions.map((opt) => (

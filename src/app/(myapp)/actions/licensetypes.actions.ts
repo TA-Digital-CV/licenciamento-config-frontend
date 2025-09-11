@@ -315,7 +315,7 @@ export const useLicenseTypesActions = (id?: string) => {
     if (id) {
       loadLicenseType(id);
     }
-  }, [id, loadAllOptions, loadLicenseType]);
+  }, [id]);
 
   return {
     // Estado

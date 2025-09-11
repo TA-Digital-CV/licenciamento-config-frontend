@@ -1,6 +1,7 @@
 // Types for Categories API
 
 export interface CategoryResponseDTO {
+  active: any;
   id: string;
   code: string;
   name: string;

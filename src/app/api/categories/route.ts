@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient, ApiResponse } from '../../(myapp)/lib/api-client';
 import { CategoryResponseDTO, CategoryRequestDTO } from '@/app/(myapp)/types/categories.types';
@@ -31,14 +32,14 @@ export async function GET(request: NextRequest) {
     const transformedContent = response.content.map((category) => ({
       id: category.id,
       name: category.name,
-      description: '',
+      description: (category as any)?.description ?? '',
       code: category.code,
-      active: true,
+      active: category.active,
       level: category.level,
-      sortOrder: 0,
+      sortOrder: (category as any)?.level ?? 0,
       metadata: category.metadata,
       path: category.path,
-      parentId: null,
+      parentId: (category as any)?.parentId ?? null,
       sectorId: category.sectorId,
       sectorName: category.sectorName,
       createdAt: new Date().toISOString(),
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       content: transformedContent,
-      total: response.total,
+      total: (response as any)?.total ?? (response as any)?.totalElements ?? transformedContent.length,
     });
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -77,14 +78,14 @@ export async function POST(request: NextRequest) {
     const transformedResponse = {
       id: response.id,
       name: response.name,
-      description: '',
+      description: (response as any)?.description ?? '',
       code: response.code,
-      active: true,
+      active: response.active,
       level: response.level,
-      sortOrder: 0,
+      sortOrder: (response as any)?.level ?? 0,
       metadata: response.metadata,
       path: response.path,
-      parentId: null,
+      parentId: (response as any)?.parentId ?? null,
       sectorId: response.sectorId,
       sectorName: response.sectorName,
       createdAt: new Date().toISOString(),

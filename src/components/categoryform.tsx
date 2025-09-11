@@ -24,7 +24,7 @@ const formSchema = z.object({
   description: z.string().optional().default(''),
   code: z.string().min(1, 'Código é obrigatório'),
   sectorId: z.string().min(1, 'Setor é obrigatório'),
-  parentCategoryId: z.string().optional(),
+  parentId: z.string().optional(),
   sortOrder: z.coerce.number().int().optional(),
   active: z.boolean().default(true),
   metadata: z.string().optional().default(''),
@@ -39,12 +39,14 @@ export default function CategoryForm({ id }: { id?: string }) {
     description: '',
     code: '',
     sectorId: '',
-    parentCategoryId: undefined,
+    parentId: undefined,
     sortOrder: undefined,
     active: true,
     metadata: '',
   });
   const [sectorOptions, setSectorOptions] = useState<{ value: string; label: string }[]>([]);
+  const [parentOptions, setParentOptions] = useState<{ value: string; label: string }[]>([]);
+  const [selectedSectorId, setSelectedSectorId] = useState<string>('');
   const router = useRouter();
   const { igrpToast } = useIGRPToast();
 
@@ -62,6 +64,35 @@ export default function CategoryForm({ id }: { id?: string }) {
     return () => controller.abort();
   }, []);
 
+  // Sincronizar setor selecionado com valores iniciais (edição)
+  useEffect(() => {
+    setSelectedSectorId(initialValues.sectorId || '');
+  }, [initialValues.sectorId]);
+
+  // Carregar categorias ativas do setor selecionado para a seleção de categoria pai
+  useEffect(() => {
+    const controller = new AbortController();
+    async function fetchActiveCategoriesBySector() {
+      try {
+        if (!selectedSectorId) {
+          setParentOptions([]);
+          return;
+        }
+        const url = `/api/categories?active=true&sectorId=${encodeURIComponent(selectedSectorId)}`;
+        const res = await fetch(url, { signal: controller.signal });
+        const data = await res.json();
+        const opts = (data.content || [])
+          .filter((c: any) => !id || c.id !== id)
+          .map((c: any) => ({ value: c.id, label: c.name }));
+        setParentOptions(opts);
+      } catch (_) {
+        setParentOptions([]);
+      }
+    }
+    fetchActiveCategoriesBySector();
+    return () => controller.abort();
+  }, [id, selectedSectorId]);
+
   useEffect(() => {
     let mounted = true;
     async function load() {
@@ -76,13 +107,16 @@ export default function CategoryForm({ id }: { id?: string }) {
           description: data.description ?? '',
           code: data.code ?? '',
           sectorId: data.sectorId ?? '',
-          parentCategoryId: data.parentCategoryId ?? undefined,
+          parentId: data.parentId ?? undefined,
           sortOrder: data.sortOrder ?? undefined,
           active: data.active !== false,
           metadata:
             typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
         };
-        if (mounted) setInitialValues(mapped);
+        if (mounted) {
+          setInitialValues(mapped);
+          setSelectedSectorId(mapped.sectorId || '');
+        }
       } catch (e: any) {
         console.error(e);
         igrpToast({
@@ -108,7 +142,7 @@ export default function CategoryForm({ id }: { id?: string }) {
         description: values.description || '',
         code: values.code,
         sectorId: values.sectorId,
-        parentCategoryId: values.parentCategoryId,
+        parentId: values.parentId,
         sortOrder: values.sortOrder,
         active: values.active !== false,
         metadata: (() => {
@@ -127,6 +161,12 @@ export default function CategoryForm({ id }: { id?: string }) {
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error('Falha ao criar categoria');
+        const created = await res.json();
+        if (created?.id) {
+          router.push(`/parametrizacao/category/${created.id}/editar`);
+        } else {
+          router.push('/parametrizacao?tab=categories');
+        }
       } else {
         const res = await fetch(`/api/categories/${id}`, {
           method: 'PUT',
@@ -134,6 +174,7 @@ export default function CategoryForm({ id }: { id?: string }) {
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error('Falha ao atualizar categoria');
+        router.push(`/parametrizacao/category/${id}/editar`);
       }
 
       igrpToast({
@@ -141,7 +182,6 @@ export default function CategoryForm({ id }: { id?: string }) {
         description: 'Categoria guardada com sucesso',
         type: 'default',
       });
-      router.push('/parametrizacao');
     } catch (e: any) {
       console.error(e);
       igrpToast({ title: 'Erro', description: e?.message || 'Erro ao submeter', type: 'default' });
@@ -182,8 +222,22 @@ export default function CategoryForm({ id }: { id?: string }) {
           required
           placeholder="Selecione um setor"
           options={sectorOptions}
+          onValueChange={(v: any) => {
+            const val = v && v.target && typeof v.target.value !== 'undefined' ? v.target.value : v;
+            setSelectedSectorId(val || '');
+            setParentOptions([]);
+            try {
+              formRef.current?.setValue?.('parentId', undefined);
+            } catch {}
+          }}
         />
-        <IGRPInputText name="parentCategoryId" label="Categoria Pai (Id)" />
+        <IGRPSelect
+          name="parentId"
+          label="Categoria Pai"
+          placeholder={selectedSectorId ? 'Selecione a categoria pai' : 'Selecione primeiro um setor'}
+          options={parentOptions}
+          disabled={!selectedSectorId}
+        />
         <IGRPInputNumber name="sortOrder" label="Ordenação" />
         <IGRPSwitch name="active" label="Ativo" />
         <IGRPTextarea name="description" label="Descrição" rows={3} className="md:col-span-2" />
@@ -201,7 +255,7 @@ export default function CategoryForm({ id }: { id?: string }) {
           </button>
           <button
             type="button"
-            onClick={() => router.push('/parametrizacao')}
+            onClick={() => router.push('/parametrizacao?tab=categories')}
             disabled={actionsDisabled}
             className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent disabled:opacity-50 disabled:pointer-events-none"
           >
