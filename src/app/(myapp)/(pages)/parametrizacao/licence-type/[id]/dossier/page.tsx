@@ -6,7 +6,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useRef, useState, use } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { use } from 'react';
 import Link from 'next/link';
 import {
   IGRPForm,
@@ -18,7 +19,7 @@ import {
   IGRPInputText,
 } from '@igrp/igrp-framework-react-design-system';
 import LegislationFilters from '@/components/dossier/LegislationFilters';
-import LegislationList from '@/components/dossier/LegislationList';
+import { LegislationList } from '@/components/dossier/LegislationList';
 import LegislationForm from '@/components/dossier/LegislationForm';
 import GeneralForm from '@/components/dossier/GeneralForm';
 import { z } from 'zod';
@@ -28,6 +29,7 @@ import ProcessTypeList from '@/components/dossier/ProcessTypeList';
 import ProcessTypeForm from '@/components/dossier/ProcessTypeForm';
 import FeeList from '@/components/dossier/FeeList';
 import FeeForm from '@/components/dossier/FeeForm';
+import { LegislationRequestDTO } from '@/app/(myapp)/types/legislations.types';
 
 const TABS = [
   { id: 'general', label: 'Dados Gerais' },
@@ -94,7 +96,7 @@ export default function PageDossierLicenceTypeComponent({
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [licenceType, setLicenceType] = useState<any>(null);
-  const [hasDossier, setHasDossier] = useState(false);
+  const [categoryName, setCategoryName] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabId>('general');
   const { igrpToast } = useIGRPToast();
 
@@ -122,8 +124,8 @@ export default function PageDossierLicenceTypeComponent({
   // Estados: Legislações
   const [legislations, setLegislations] = useState<any[]>([]);
   const [legSearch, setLegSearch] = useState('');
-  const [legTypeFilter, setLegTypeFilter] = useState('');
-  const [legStatusFilter, setLegStatusFilter] = useState('');
+  const [legTypeFilter, setLegTypeFilter] = useState('all');
+  const [legStatusFilter, setLegStatusFilter] = useState('all');
   const [legStartDate, setLegStartDate] = useState('');
   const [legEndDate, setLegEndDate] = useState('');
   const [editingIndex, setEditingIndex] = useState<number>(-1);
@@ -148,8 +150,8 @@ export default function PageDossierLicenceTypeComponent({
 
   const filteredLegislations = legislations.filter((l) => {
     const nameMatch = !legSearch || (l?.name || '').toLowerCase().includes(legSearch.toLowerCase());
-    const typeMatch = !legTypeFilter || l?.legislationType === legTypeFilter;
-    const statusMatch = !legStatusFilter || (l?.status || '') === legStatusFilter;
+    const typeMatch = !legTypeFilter || legTypeFilter === 'all' || l?.legislationType === legTypeFilter;
+    const statusMatch = !legStatusFilter || legStatusFilter === 'all' || (l?.status || '') === legStatusFilter;
     const date = l?.publicationDate || '';
     const startOk = !legStartDate || (date && date >= legStartDate);
     const endOk = !legEndDate || (date && date <= legEndDate);
@@ -178,7 +180,20 @@ export default function PageDossierLicenceTypeComponent({
         const data = await res.json();
         if (mounted) {
           setLicenceType(data);
-          setHasDossier(Boolean(data.metadata?.hasDossier));
+          
+          // Carregar nome da categoria se categoryId existir
+          if (data.categoryId) {
+            try {
+              const categoryRes = await fetch(`/api/categories/${data.categoryId}`);
+              if (categoryRes.ok) {
+                const categoryData = await categoryRes.json();
+                setCategoryName(categoryData.name || '');
+              }
+            } catch (error) {
+              console.error('Erro ao carregar categoria:', error);
+            }
+          }
+          
           const general = data?.metadata?.dossier?.general || {};
           setInitialGeneral({
             licensingModel: general.licensingModel || '',
@@ -202,6 +217,7 @@ export default function PageDossierLicenceTypeComponent({
           setProcessTypes(procs);
           const fs = Array.isArray(data?.metadata?.dossier?.fees) ? data.metadata.dossier.fees : [];
           setFees(fs);
+
         }
       } catch (e: any) {
         console.error(e);
@@ -219,6 +235,8 @@ export default function PageDossierLicenceTypeComponent({
       mounted = false;
     };
   }, [id]);
+
+
 
   useEffect(() => {
     const controller = new AbortController();
@@ -272,56 +290,27 @@ export default function PageDossierLicenceTypeComponent({
     return () => controller.abort();
   }, []);
 
-  const handleToggleDossier = async (enabled: boolean) => {
-    setSaving(true);
-    try {
-      const metadata = {
-        ...licenceType?.metadata,
-        hasDossier: enabled,
-      };
 
-      const payload = {
-        ...licenceType,
-        metadata,
-      };
 
-      const res = await fetch(`/api/licence-types/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error('Falha ao atualizar dossier');
-
-      setHasDossier(enabled);
-      setLicenceType((prev: any) => ({ ...prev, metadata }));
-      igrpToast({
-        title: 'Sucesso',
-        description: `Dossier ${enabled ? 'ativado' : 'desativado'} com sucesso`,
-        type: 'default',
-      });
-    } catch (e: any) {
-      console.error(e);
-      igrpToast({
-        title: 'Erro',
-        description: e?.message || 'Erro ao atualizar dossier',
-        type: 'default',
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSaveGeneral = async (values: z.infer<typeof generalSchema>) => {
+  const handleSaveGeneral = async (values: any) => {
     setSubmittingGeneral(true);
     try {
       const newGeneral = {
-        licensingModel: values.licensingModel || '',
-        validityValue: values.validityValue ?? undefined,
+        licenseTypeId: values.licenseTypeId || id,
+        model: values.model || '',
+        validityPeriod: values.validityPeriod ?? undefined,
         validityUnit: values.validityUnit || '',
-        allowRenewal: values.allowRenewal === true,
-        renewalDays: values.renewalDays ?? undefined,
-        notes: values.notes || '',
+        provisionalValidity: values.provisionalValidity ?? undefined,
+        definitiveLicenseValidity: values.definitiveLicenseValidity ?? undefined,
+        provisionalDefaultPeriod: values.provisionalDefaultPeriod ?? undefined,
+        definitiveDefaultPeriod: values.definitiveDefaultPeriod ?? undefined,
+        provisionalRenewalPeriod: values.provisionalRenewalPeriod ?? undefined,
+        maxProvisonalRenewal: values.maxProvisonalRenewal ?? undefined,
+        definitiveRenewalPeriod: values.definitiveRenewalPeriod ?? undefined,
+        definitiveRenewalDefaultPeriod: values.definitiveRenewalDefaultPeriod ?? undefined,
+        renewalDefaultPeriod: values.renewalDefaultPeriod ?? undefined,
+        maxRenewalPeriod: values.maxRenewalPeriod ?? undefined,
+        vitalityFlag: values.vitalityFlag === true,
       };
 
       const newMetadata = {
@@ -807,7 +796,7 @@ export default function PageDossierLicenceTypeComponent({
               <span className="font-medium">Código:</span> {licenceType?.code}
             </div>
             <div>
-              <span className="font-medium">Categoria:</span> {licenceType?.categoryName || 'N/A'}
+              <span className="font-medium">Categoria:</span> {categoryName || 'N/A'}
             </div>
             <div>
               <span className="font-medium">Status:</span>
@@ -827,23 +816,7 @@ export default function PageDossierLicenceTypeComponent({
           <h2 className="text-base font-semibold mb-3">Configuração do Dossier</h2>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Ativar Dossier</div>
-                <div className="text-sm text-muted-foreground">
-                  Ative esta opção para habilitar a gestão de dossier para este tipo de licença.
-                </div>
-              </div>
-              <IGRPSwitch
-                checked={hasDossier}
-                onCheckedChange={handleToggleDossier}
-                disabled={saving}
-                name={''}
-              />
-            </div>
-
-            {hasDossier ? (
-              <div className="mt-4">
+            <div className="mt-4">
                 {/* Tabs */}
                 <div role="tablist" aria-label="Dossier - Tabs" className="border-b">
                   <div className="flex items-center gap-1">
@@ -875,10 +848,12 @@ export default function PageDossierLicenceTypeComponent({
                   >
                     <GeneralForm
                       id={id}
-                      generalSchema={generalSchema}
                       defaultValues={initialGeneral}
-                      licensingModelOptions={licensingModelOptions}
-                      validityUnitOptions={validityUnitOptions}
+                      licenceTypeDefaults={{
+                        model: licenceType?.metadata?.dossier?.general?.model,
+                        validityPeriod: licenceType?.metadata?.dossier?.general?.validityPeriod,
+                        validityUnit: licenceType?.metadata?.dossier?.general?.validityUnit,
+                      }}
                       submitting={submittingGeneral}
                       onSubmit={handleSaveGeneral}
                       formRef={formRef}
@@ -928,15 +903,15 @@ export default function PageDossierLicenceTypeComponent({
 
                       {/* Lista */}
                       <LegislationList
-                        filteredLegislations={filteredLegislations}
-                        legislations={legislations}
+                        legislations={filteredLegislations}
                         legislationTypeOptions={legislationTypeOptions}
                         legislationStatusOptions={legislationStatusOptions}
-                        onEdit={(originalIndex) => {
-                          setEditingIndex(originalIndex);
-                          setEditingInitial({ ...legislations[originalIndex] });
+                        onEdit={(legislation) => {
+                          const index = legislations.findIndex(l => l.id === legislation.id);
+                          setEditingIndex(index);
+                          setEditingInitial({ ...legislation });
                         }}
-                        onDelete={handleDeleteLegislation}
+                        onDelete={(legislation) => handleDeleteLegislation(Number(legislation.id))}
                       />
 
                       {/* Formulário de criação/edição */}
@@ -949,7 +924,7 @@ export default function PageDossierLicenceTypeComponent({
                           legislationTypeOptions={legislationTypeOptions}
                           legislationStatusOptions={legislationStatusOptions}
                           savingLegislation={savingLegislation}
-                          onSubmit={handleSaveLegislation}
+                          onSubmit={(values: LegislationRequestDTO) => handleSaveLegislation(values as unknown as z.infer<typeof legislationSchema>)}
                           onCancel={() => {
                             setEditingIndex(-1);
                             setEditingInitial(null);
@@ -994,7 +969,7 @@ export default function PageDossierLicenceTypeComponent({
                       <EntityList
                         entities={entities}
                         entityTypeOptions={entityTypeOptions}
-                        onEdit={(idx) => {
+                        onEdit={(idx: number) => {
                           setEntityEditingIndex(idx);
                           setEntityEditingInitial({ ...entities[idx] });
                         }}
@@ -1133,15 +1108,6 @@ export default function PageDossierLicenceTypeComponent({
                   </section>
                 </div>
               </div>
-            ) : (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-medium text-gray-700 mb-2">Dossier Desativado</h3>
-                <p className="text-sm text-gray-600">
-                  O dossier não está ativo para este tipo de licença. Ative a opção acima para
-                  habilitar a gestão de dossier.
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>

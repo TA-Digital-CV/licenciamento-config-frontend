@@ -60,6 +60,13 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
   const [loadingCategories, setLoadingCategories] = useState<boolean>(false);
   const [categoryError, setCategoryError] = useState<string | null>(null);
 
+  // Mapa para exibir o nome da categoria de forma consistente
+  const categoryLabelMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const opt of categoryOptions) map[opt.value] = opt.label;
+    return map;
+  }, [categoryOptions]);
+
   // Sync filters from URL query params (categoryId, status)
   useEffect(() => {
     const qpCategory = searchParams.get('categoryId') || '';
@@ -257,7 +264,11 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
       {
         accessorKey: 'categoryName',
         header: 'Categoria',
-        cell: ({ row }) => <div className="text-sm">{row.getValue('categoryName') || '-'}</div>,
+        cell: ({ row }) => {
+          const catId = row.original.categoryId as string | undefined;
+          const label = (catId && categoryLabelMap[catId]) || (row.getValue('categoryName') as string) || '-';
+          return <div className="text-sm">{label}</div>;
+        },
       },
       {
         id: 'sector',
@@ -267,11 +278,6 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
           const sectorName = (catId && categoriesMap[catId]?.sectorName) || '-';
           return <div className="text-sm">{sectorName}</div>;
         },
-      },
-      {
-        accessorKey: 'sortOrder',
-        header: 'Ordem',
-        cell: ({ row }) => <div className="text-sm">{row.getValue('sortOrder') || '-'}</div>,
       },
       {
         accessorKey: 'active',
@@ -332,7 +338,7 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         },
       },
     ],
-    [categoriesMap, pendingId, toggleActive],
+    [categoriesMap, categoryLabelMap, pendingId, toggleActive],
   );
 
   // New: client-side search on name and code
@@ -356,6 +362,33 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
     }
     return base;
   }, [licenceTypes, search, sectorFilter, categoriesMap]);
+
+  // Ordenação alfabética por Setor > Categoria > Nome
+  const sortedData = useMemo(() => {
+    const getSectorNameFor = (item: any) => {
+      const catId = item.categoryId as string | undefined;
+      return (catId && categoriesMap[catId]?.sectorName) || '';
+    };
+    const getCategoryLabelFor = (item: any) => {
+      const catId = item.categoryId as string | undefined;
+      return (catId && categoryLabelMap[catId]) || item.categoryName || '';
+    };
+    return [...filteredData].sort((a: any, b: any) => {
+      const sA = getSectorNameFor(a);
+      const sB = getSectorNameFor(b);
+      const cmpS = sA.localeCompare(sB, 'pt', { sensitivity: 'base' });
+      if (cmpS !== 0) return cmpS;
+
+      const cA = getCategoryLabelFor(a);
+      const cB = getCategoryLabelFor(b);
+      const cmpC = cA.localeCompare(cB, 'pt', { sensitivity: 'base' });
+      if (cmpC !== 0) return cmpC;
+
+      const nA = String(a.name || '');
+      const nB = String(b.name || '');
+      return nA.localeCompare(nB, 'pt', { sensitivity: 'base' });
+    });
+  }, [filteredData, categoriesMap, categoryLabelMap]);
 
   if (loading) {
     return <div className="p-4 text-sm text-muted-foreground">A carregar tipos de licença...</div>;
@@ -432,7 +465,7 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
 
       <IGRPDataTable
         columns={columns}
-        data={filteredData}
+        data={sortedData}
         showPagination={true}
         pageSizePagination={[10, 25, 50]}
         notFoundLabel="Sem tipos de licença encontrados."

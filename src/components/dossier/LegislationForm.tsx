@@ -7,18 +7,19 @@ import {
   IGRPSelect,
   IGRPTextarea,
 } from '@igrp/igrp-framework-react-design-system';
+import { LegislationRequestDTO, LegislationResponseDTO } from '@/app/(myapp)/types/legislations.types';
 
 type Option = { value: string; label: string };
 
 type Props = {
   id: string;
   legislationSchema: any; // zod schema passed from parent
-  editingInitial: any;
+  editingInitial: LegislationResponseDTO | null;
   editingIndex: number;
   legislationTypeOptions: Option[];
   legislationStatusOptions: Option[];
   savingLegislation: boolean;
-  onSubmit: (values: any) => void | Promise<void>;
+  onSubmit: (values: LegislationRequestDTO) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -91,7 +92,7 @@ export default function LegislationForm({
       </h4>
       <IGRPForm
         schema={legislationSchema}
-        defaultValues={editingInitial}
+        defaultValues={editingInitial || undefined}
         validationMode="onSubmit"
         onSubmit={onSubmit}
         resetAfterSubmit={false}
@@ -100,7 +101,7 @@ export default function LegislationForm({
         key={`leg-${id}-${editingInitial?.id || 'new'}`}
         formRef={formRef}
       >
-        <IGRPInputText name="name" label="Nome" required />
+        <IGRPInputText name="title" label="Título" required />
         <IGRPSelect
           name="legislationType"
           label="Tipo"
@@ -113,7 +114,7 @@ export default function LegislationForm({
           required
           placeholder="YYYY-MM-DD"
         />
-        <IGRPInputText name="republicBulletin" label="Número oficial" />
+        <IGRPInputText name="republicBulletin" label="Boletim da República" />
         <IGRPSelect
           name="status"
           label="Status"
@@ -139,9 +140,18 @@ export default function LegislationForm({
 
         <IGRPTextarea
           name="description"
-          label="Resumo/Descrição"
+          label="Descrição"
           rows={3}
           className="md:col-span-2"
+        />
+        
+        <IGRPInputText
+          name="priority"
+          label="Prioridade"
+          type="number"
+          min="1"
+          max="10"
+          className="md:col-span-1"
         />
 
         <div className="flex items-center gap-2 md:col-span-2">

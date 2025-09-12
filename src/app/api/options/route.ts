@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient, ApiResponse } from '@/app/(myapp)/lib/api-client';
 import {
@@ -9,6 +10,7 @@ import {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
+    const codes = searchParams.get('codes');
     const ccode = searchParams.get('ccode');
     const ckey = searchParams.get('ckey');
     const cvalue = searchParams.get('cvalue');
@@ -18,7 +20,42 @@ export async function GET(request: NextRequest) {
     const pageNumber = searchParams.get('pageNumber') || '0';
     const pageSize = searchParams.get('pageSize') || '20';
 
-    // Build query parameters matching backend controller
+    // Handle multiple codes request
+    if (codes) {
+      const codeList = codes.split(',').map(code => code.trim()).filter(Boolean);
+      const optionSets: Record<string, { items: any[] }> = {};
+      
+      // Process each code separately
+      for (const code of codeList) {
+        try {
+          const params = new URLSearchParams({
+            pageNumber: '0',
+            pageSize: '1000', // Get all items for each code
+            active: 'true',
+            ccode: code,
+          });
+
+          const response = await apiClient.get<WrapperListOptionsDTO>(`/options?${params.toString()}`);
+          
+          // Transform response to match expected format
+          optionSets[code] = {
+            items: response.data?.content?.map((item: { ckey: any; cvalue: any; }) => ({
+              key: item.ckey,
+              value: item.cvalue,
+              ...item
+            })) || []
+          };
+        } catch (error) {
+          console.error(`Error fetching options for code ${code}:`, error);
+          // Continue with other codes even if one fails
+          optionSets[code] = { items: [] };
+        }
+      }
+
+      return NextResponse.json({ optionSets });
+    }
+
+    // Original single code behavior
     const params = new URLSearchParams({
       pageNumber,
       pageSize,

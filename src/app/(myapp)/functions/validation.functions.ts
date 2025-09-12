@@ -191,10 +191,95 @@ export const licenceTypeFormSchema = z.object({
   }
 });
 
+// Schema para formulário de legislações com validações
+export const legislationFormSchema = z.object({
+  title: z.string().min(1, 'Título é obrigatório').transform((s) => s.trim()),
+  description: z.string().optional().default(''),
+  legislationType: z.string().min(1, 'Tipo de legislação é obrigatório'),
+  publicationDate: z.string().min(1, 'Data de publicação é obrigatória'),
+  effectiveDate: z.string().min(1, 'Data de vigência é obrigatória'),
+  expirationDate: z.string().optional(),
+  documentNumber: z.string().min(1, 'Número do documento é obrigatório').transform((s) => s.trim()),
+  issuingAuthority: z.string().min(1, 'Autoridade emissora é obrigatória').transform((s) => s.trim()),
+  legalFramework: z.string().optional().default(''),
+  scope: z.string().min(1, 'Âmbito é obrigatório').transform((s) => s.trim()),
+  status: z.enum(['VIGENTE', 'REVOGADA', 'SUSPENSA', 'EM_TRAMITACAO'], {
+    errorMap: () => ({ message: 'Status inválido' })
+  }).default('EM_TRAMITACAO'),
+  priority: z.enum(['ALTA', 'MEDIA', 'BAIXA'], {
+    errorMap: () => ({ message: 'Prioridade inválida' })
+  }).default('MEDIA'),
+  documentUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+  relatedLegislationIds: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).optional().default([]),
+  active: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().min(0, 'Ordenação inválida').optional(),
+  metadata: z.string().optional().default(''),
+}).superRefine((val, ctx) => {
+  // Validar datas
+  const publicationDate = new Date(val.publicationDate);
+  const effectiveDate = new Date(val.effectiveDate);
+  const expirationDate = val.expirationDate ? new Date(val.expirationDate) : null;
+  
+  // Data de vigência não pode ser anterior à data de publicação
+  if (effectiveDate < publicationDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Data de vigência não pode ser anterior à data de publicação',
+      path: ['effectiveDate'],
+    });
+  }
+  
+  // Data de expiração não pode ser anterior à data de vigência
+  if (expirationDate && expirationDate < effectiveDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Data de expiração não pode ser anterior à data de vigência',
+      path: ['expirationDate'],
+    });
+  }
+  
+  // Validar status vs data de expiração
+  if (val.status === 'VIGENTE' && expirationDate && expirationDate < new Date()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Legislação não pode estar vigente com data de expiração no passado',
+      path: ['status'],
+    });
+  }
+  
+  // Validar URL do documento
+  if (val.documentUrl && val.documentUrl.trim() !== '') {
+    try {
+      new URL(val.documentUrl);
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'URL do documento inválida',
+        path: ['documentUrl'],
+      });
+    }
+  }
+  
+  // Validar metadata JSON quando preenchida
+  if (val.metadata && val.metadata.trim() !== '') {
+    try {
+      JSON.parse(val.metadata);
+    } catch {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Metadata deve ser um JSON válido',
+        path: ['metadata'],
+      });
+    }
+  }
+});
+
 // Tipos TypeScript derivados dos schemas
 export type OptionItem = z.infer<typeof optionItemSchema>;
 export type OptionFormData = z.infer<typeof optionFormSchema>;
 export type LicenceTypeFormData = z.infer<typeof licenceTypeFormSchema>;
+export type LegislationFormData = z.infer<typeof legislationFormSchema>;
 
 // Funções utilitárias de validação
 export const validateOptionItem = (data: unknown): OptionItem => {
@@ -207,6 +292,10 @@ export const validateOptionForm = (data: unknown): OptionFormData => {
 
 export const validateLicenceTypeForm = (data: unknown): LicenceTypeFormData => {
   return licenceTypeFormSchema.parse(data);
+};
+
+export const validateLegislationForm = (data: unknown): LegislationFormData => {
+  return legislationFormSchema.parse(data);
 };
 
 // Função para validar metadata JSON
@@ -233,3 +322,55 @@ export const serializeMetadata = (
     return String(metadata);
   }
 };
+
+// Função para transformar dados do formulário de legislação para API
+export const transformLegislationFormData = (
+  formData: LegislationFormData
+): Record<string, unknown> => {
+  return {
+    title: formData.title.trim(),
+    description: formData.description || '',
+    legislationType: formData.legislationType,
+    publicationDate: formData.publicationDate,
+    effectiveDate: formData.effectiveDate,
+    expirationDate: formData.expirationDate || null,
+    documentNumber: formData.documentNumber.trim(),
+    issuingAuthority: formData.issuingAuthority.trim(),
+    legalFramework: formData.legalFramework || '',
+    scope: formData.scope.trim(),
+    status: formData.status,
+    priority: formData.priority,
+    documentUrl: formData.documentUrl || null,
+    relatedLegislationIds: formData.relatedLegislationIds || [],
+    tags: formData.tags || [],
+    active: formData.active,
+    sortOrder: formData.sortOrder || null,
+    metadata: formData.metadata ? parseMetadata(formData.metadata) : null,
+  };
+};
+
+// Constantes de validação para legislações
+export const LEGISLATION_STATUS_OPTIONS = [
+  { value: 'VIGENTE', label: 'Vigente' },
+  { value: 'REVOGADA', label: 'Revogada' },
+  { value: 'SUSPENSA', label: 'Suspensa' },
+  { value: 'EM_TRAMITACAO', label: 'Em Tramitação' },
+] as const;
+
+export const LEGISLATION_PRIORITY_OPTIONS = [
+  { value: 'ALTA', label: 'Alta' },
+  { value: 'MEDIA', label: 'Média' },
+  { value: 'BAIXA', label: 'Baixa' },
+] as const;
+
+// Tipos de legislação comuns
+export const COMMON_LEGISLATION_TYPES = [
+  'LEI',
+  'DECRETO',
+  'PORTARIA',
+  'RESOLUÇÃO',
+  'INSTRUÇÃO_NORMATIVA',
+  'CIRCULAR',
+  'DESPACHO',
+  'REGULAMENTO',
+] as const;

@@ -25,6 +25,7 @@ export interface OptionRequestDTO {
 }
 
 export interface WrapperListOptionsDTO {
+  data: any;
   pageNumber: number;
   pageSize: number;
   totalElements: number;

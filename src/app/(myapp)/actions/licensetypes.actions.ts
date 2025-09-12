@@ -278,9 +278,9 @@ export const useLicenseTypesActions = (id?: string) => {
       // Navegar para página de edição
       const targetId = result?.id || id;
       if (targetId) {
-        router.push(`/licence-types/${targetId}/editar`);
+        router.push(`/parametrizacao/licence-type/${targetId}/editar`);
       } else {
-        router.push('/licence-types');
+        router.push('/parametrizacao?tab=licence-types');
       }
     } catch (error: unknown) {
       console.error('❌ Error submitting license type form:', error);

@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  IGRPInputText,
+  IGRPSelect,
+  IGRPButton,
+} from '@igrp/igrp-framework-react-design-system';
 
 type Option = { value: string; label: string };
 
@@ -34,75 +39,68 @@ export default function LegislationFilters({
   onNew,
 }: Props) {
   return (
-    <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:gap-3">
-      <div className="flex flex-col">
-        <label className="text-xs text-muted-foreground">Pesquisar por nome</label>
-        <input
-          type="text"
+    <div className="mb-4 grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+      <div className="md:col-span-2">
+        <IGRPInputText
+          name="search"
+          label="Pesquisar por título"
           value={legSearch}
           onChange={(e) => setLegSearch(e.target.value)}
-          className="rounded border px-2 py-1 text-sm bg-background w-64"
-          placeholder="Nome"
+          placeholder="Digite o título da legislação"
         />
       </div>
-      <div className="flex flex-col">
-        <label className="text-xs text-muted-foreground">Tipo</label>
-        <select
-          className="rounded border px-2 py-1 text-sm bg-background w-48"
+      
+      <div>
+        <IGRPSelect
+          name="type"
+          label="Tipo"
           value={legTypeFilter}
-          onChange={(e) => setLegTypeFilter(e.target.value)}
-        >
-          <option value="">Todos</option>
-          {legislationTypeOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={(value) => setLegTypeFilter(value || 'all')}
+          options={[{ value: 'all', label: 'Todos' }, ...legislationTypeOptions]}
+          placeholder="Selecione o tipo"
+        />
       </div>
-      <div className="flex flex-col">
-        <label className="text-xs text-muted-foreground">Status</label>
-        <select
-          className="rounded border px-2 py-1 text-sm bg-background w-40"
+      
+      <div>
+        <IGRPSelect
+          name="status"
+          label="Status"
           value={legStatusFilter}
-          onChange={(e) => setLegStatusFilter(e.target.value)}
+          onValueChange={(value) => setLegStatusFilter(value || 'all')}
+          options={[{ value: 'all', label: 'Todos' }, ...legislationStatusOptions]}
+          placeholder="Selecione o status"
+        />
+      </div>
+      
+      <div>
+        <IGRPInputText
+          name="startDate"
+          label="Data início"
+          value={legStartDate}
+          onChange={(e) => setLegStartDate(e.target.value)}
+          placeholder="DD/MM/AAAA"
+        />
+      </div>
+      
+      <div>
+        <IGRPInputText
+          name="endDate"
+          label="Data fim"
+          value={legEndDate}
+          onChange={(e) => setLegEndDate(e.target.value)}
+          placeholder="DD/MM/AAAA"
+        />
+      </div>
+      
+      <div className="md:col-span-6 flex justify-end">
+        <IGRPButton
+          type="button"
+          variant="default"
+          onClick={onNew}
         >
-          <option value="">Todos</option>
-          {legislationStatusOptions.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          Nova Legislação
+        </IGRPButton>
       </div>
-      <div className="flex items-end gap-2">
-        <div className="flex flex-col">
-          <label className="text-xs text-muted-foreground">Data início</label>
-          <input
-            type="date"
-            className="rounded border px-2 py-1 text-sm bg-background"
-            value={legStartDate}
-            onChange={(e) => setLegStartDate(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-muted-foreground">Data fim</label>
-          <input
-            type="date"
-            className="rounded border px-2 py-1 text-sm bg-background"
-            value={legEndDate}
-            onChange={(e) => setLegEndDate(e.target.value)}
-          />
-        </div>
-      </div>
-      <div className="flex-1" />
-      <button
-        type="button"
-        className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
-        onClick={onNew}
-      >
-        Nova Legislação
-      </button>
     </div>
   );
 }

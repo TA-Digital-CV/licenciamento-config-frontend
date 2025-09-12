@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OptionResponseDTO, OptionRequestDTO, WrapperListOptionsDTO } from '../types';
+import { 
+  LegislationResponseDTO, 
+  LegislationRequestDTO, 
+  WrapperListLegislationDTO 
+} from '../types/legislations.types';
 
 // Tipos para respostas da API
 export interface ApiResponse<T = any> {
@@ -322,3 +327,167 @@ export const transformOptionsToSelectItems = (data: any[]): { value: string; lab
     label: it.cvalue ?? it.value,
   }));
 };
+
+// === FUNÇÕES PARA LEGISLATIONS ===
+
+/**
+ * Carrega lista paginada de legislações
+ */
+export const loadLegislations = async (
+  filters: {
+    name?: string;
+    legislationType?: string;
+    licenseTypeId?: string;
+    active?: boolean;
+    pageNumber?: number;
+    pageSize?: number;
+  } = {},
+  signal?: AbortSignal,
+): Promise<WrapperListLegislationDTO> => {
+  const params = new URLSearchParams();
+  
+  if (filters.name) params.append('name', filters.name);
+  if (filters.legislationType) params.append('legislationType', filters.legislationType);
+  if (filters.licenseTypeId) params.append('licenseTypeId', filters.licenseTypeId);
+  if (filters.active !== undefined) params.append('active', filters.active.toString());
+  if (filters.pageNumber !== undefined) params.append('pageNumber', filters.pageNumber.toString());
+  if (filters.pageSize !== undefined) params.append('pageSize', filters.pageSize.toString());
+  
+  const url = `/api/legislations${params.toString() ? `?${params.toString()}` : ''}`;
+  return apiRequest<WrapperListLegislationDTO>(url, {}, signal);
+};
+
+/**
+ * Carrega legislação por ID
+ */
+export const loadLegislationById = async (
+  id: string,
+  signal?: AbortSignal,
+): Promise<LegislationResponseDTO> => {
+  const url = `/api/legislations/${encodeURIComponent(id)}`;
+  return apiRequest<LegislationResponseDTO>(url, {}, signal);
+};
+
+/**
+ * Cria nova legislação
+ */
+export const createLegislation = async (
+  data: LegislationRequestDTO,
+  signal?: AbortSignal,
+): Promise<LegislationResponseDTO> => {
+  return apiRequest<LegislationResponseDTO>(
+    '/api/legislations',
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+    signal,
+  );
+};
+
+/**
+ * Atualiza legislação existente
+ */
+export const updateLegislation = async (
+  id: string,
+  data: LegislationRequestDTO,
+  signal?: AbortSignal,
+): Promise<LegislationResponseDTO> => {
+  const url = `/api/legislations/${encodeURIComponent(id)}`;
+  return apiRequest<LegislationResponseDTO>(
+    url,
+    {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    },
+    signal,
+  );
+};
+
+/**
+ * Remove legislação
+ */
+export const deleteLegislation = async (
+  id: string,
+  signal?: AbortSignal,
+): Promise<void> => {
+  const url = `/api/legislations/${encodeURIComponent(id)}`;
+  return apiRequest<void>(
+    url,
+    {
+      method: 'DELETE',
+    },
+    signal,
+  );
+};
+
+/**
+ * Ativa/desativa legislação
+ */
+export const toggleLegislationStatus = async (
+  id: string,
+  action: 'activate' | 'deactivate',
+  signal?: AbortSignal,
+): Promise<string> => {
+  const url = `/api/legislations/${encodeURIComponent(id)}`;
+  const response = await apiRequest<{ message: string }>(
+    url,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ action }),
+    },
+    signal,
+  );
+  return response.message || 'Status atualizado com sucesso';
+};
+
+/**
+ * Transforma dados da API para formato do formulário de legislação
+ */
+export const transformLegislationToForm = (data: LegislationResponseDTO) => ({
+  title: data.title ?? '',
+  description: data.description ?? '',
+  legislationType: data.legislationType ?? '',
+  publicationDate: data.publicationDate ?? '',
+  effectiveDate: data.effectiveDate ?? '',
+  expirationDate: data.expirationDate ?? '',
+  documentNumber: data.documentNumber ?? '',
+  issuingAuthority: data.issuingAuthority ?? '',
+  legalFramework: data.legalFramework ?? '',
+  scope: data.scope ?? '',
+  status: data.status ?? 'EM_TRAMITACAO',
+  priority: data.priority ?? 'MEDIA',
+  documentUrl: data.documentUrl ?? '',
+  relatedLegislationIds: data.relatedLegislationIds ?? [],
+  tags: data.tags ?? [],
+  active: data.active !== false,
+  metadata: typeof data.metadata === 'string' ? data.metadata : JSON.stringify(data.metadata ?? ''),
+});
+
+/**
+ * Transforma dados do formulário para payload da API de legislação
+ */
+export const transformFormToLegislation = (values: any): LegislationRequestDTO => ({
+  title: values.title,
+  description: values.description || '',
+  legislationType: values.legislationType,
+  publicationDate: values.publicationDate,
+  effectiveDate: values.effectiveDate,
+  expirationDate: values.expirationDate || undefined,
+  documentNumber: values.documentNumber,
+  issuingAuthority: values.issuingAuthority,
+  legalFramework: values.legalFramework || undefined,
+  scope: values.scope,
+  status: values.status,
+  priority: values.priority,
+  documentUrl: values.documentUrl || undefined,
+  relatedLegislationIds: values.relatedLegislationIds || [],
+  tags: values.tags || [],
+  metadata: (() => {
+    try {
+      return values.metadata ? JSON.parse(values.metadata) : undefined;
+    } catch {
+      return values.metadata || undefined;
+    }
+  })(),
+});
