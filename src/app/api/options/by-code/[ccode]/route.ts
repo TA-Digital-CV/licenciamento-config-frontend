@@ -52,11 +52,11 @@ export async function GET(
     if (includeInactive !== null && includeInactive !== undefined)
       queryParams.append('includeInactive', includeInactive);
     if (format) queryParams.append('format', format);
-    
+
     // Add pagination parameters as expected by the API
     queryParams.append('pageNumber', '0');
     queryParams.append('pageSize', '20');
-    
+
     const findUrl = `/options?${queryParams.toString()}`;
 
     const response: any = await apiClient.get<any>(findUrl);
@@ -156,8 +156,8 @@ export async function PUT(
           typeof item?.sortOrder === 'number'
             ? item.sortOrder
             : item?.sortOrder
-            ? Number(item.sortOrder)
-            : 0,
+              ? Number(item.sortOrder)
+              : 0,
         active: item?.active !== false,
         description: typeof item?.description === 'string' ? item.description : '',
         metadata: (() => {

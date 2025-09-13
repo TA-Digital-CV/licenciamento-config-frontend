@@ -5,12 +5,9 @@ import {
   ProcessTypeFeeResponseDTO,
 } from '@/app/(myapp)/types/process-type-fees.types';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'Process type fee ID is required' }, { status: 400 });
@@ -25,26 +22,34 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: ProcessTypeFeeRequestDTO = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: 'Process type fee ID is required' }, { status: 400 });
     }
 
-    if (!body.licenseProcessTypeId || !body.feeCategoryId || !body.feeType || body.baseAmount === undefined) {
+    if (
+      !body.licenseProcessTypeId ||
+      !body.feeCategoryId ||
+      !body.feeType ||
+      body.baseAmount === undefined
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields: licenseProcessTypeId, feeCategoryId, feeType, baseAmount' },
+        {
+          error:
+            'Missing required fields: licenseProcessTypeId, feeCategoryId, feeType, baseAmount',
+        },
         { status: 400 },
       );
     }
 
-    const response = await apiClient.put<ProcessTypeFeeResponseDTO>(`/process-type-fees/${id}`, body);
+    const response = await apiClient.put<ProcessTypeFeeResponseDTO>(
+      `/process-type-fees/${id}`,
+      body,
+    );
 
     return NextResponse.json(response);
   } catch (error) {
@@ -53,12 +58,9 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'Process type fee ID is required' }, { status: 400 });
@@ -73,12 +75,9 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -93,10 +92,16 @@ export async function PATCH(
       await apiClient.patch(`/process-type-fees/${id}/deactivate`);
       return NextResponse.json({ message: 'Process type fee deactivated successfully' });
     } else {
-      return NextResponse.json({ error: 'Invalid action. Use activate or deactivate' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid action. Use activate or deactivate' },
+        { status: 400 },
+      );
     }
   } catch (error) {
     console.error('Error updating process type fee status:', error);
-    return NextResponse.json({ error: 'Failed to update process type fee status' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update process type fee status' },
+      { status: 500 },
+    );
   }
 }

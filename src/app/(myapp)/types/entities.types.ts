@@ -1,40 +1,69 @@
 // Types for Entities API
 
-export type EntityContactRecord = {
+export interface EntityResponseDTO {
   id: string;
-  entityId: string;
-  contactType: 'TELEFONE' | 'EMAIL' | 'FAX' | 'WEBSITE' | 'ENDERECO' | 'OUTRO';
-  contactValue: string;
+  name: string;
   description?: string;
-  isPrimary: boolean;
-  isPublic: boolean;
+  code: string;
+  entityType: string;
+  type?: string;
+  parentId?: string;
+  sectorId?: string;
+  contactInfo?: string;
+  address?: string;
   active: boolean;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
-};
-
-export type EntityRecord = {
-  id: string;
-  licenseTypeId: string;
+  licenseTypeId?: string;
   licenseTypeName?: string;
-  entityName: string;
-  entityType: 'PUBLICA' | 'PRIVADA' | 'MISTA' | 'ONG' | 'INTERNACIONAL';
-  entityCategory: 'REGULADORA' | 'FISCALIZADORA' | 'CONSULTIVA' | 'EXECUTIVA' | 'APOIO';
-  description?: string;
-  legalFramework?: string;
-  jurisdiction: 'NACIONAL' | 'REGIONAL' | 'LOCAL' | 'INTERNACIONAL';
-  parentEntityId?: string;
-  parentEntityName?: string;
-  responsiblePerson?: string;
-  establishmentDate?: string;
+  taxId?: string;
+  registrationNumber?: string;
+  legalForm?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  phone?: string;
+  email?: string;
   website?: string;
-  logoUrl?: string;
-  status: 'ATIVA' | 'INATIVA' | 'SUSPENSA' | 'EM_REESTRUTURACAO';
-  priority: 'ALTA' | 'MEDIA' | 'BAIXA';
-  contacts: EntityContactRecord[];
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-  createdBy?: string;
-  updatedBy?: string;
-};
+}
+
+export interface EntityRequestDTO {
+  name: string;
+  description?: string;
+  code: string;
+  entityType: string;
+  type?: string;
+  parentId?: string;
+  sectorId?: string;
+  contactInfo?: string;
+  address?: string;
+  active?: boolean;
+  metadata?: Record<string, unknown>;
+  licenseTypeId?: string;
+  taxId?: string;
+  registrationNumber?: string;
+  legalForm?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+}
+
+export interface WrapperListEntityDTO {
+  pageNumber: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  first: boolean;
+  content: EntityResponseDTO[];
+}
+
+export interface EntityCodeCheckDTO {
+  exists: boolean;
+}

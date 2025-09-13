@@ -7,7 +7,13 @@ export interface LicenseProcessTypeResponseDTO {
   processName: string;
   processCode: string;
   description?: string;
-  processCategory: 'INICIAL' | 'RENOVACAO' | 'ALTERACAO' | 'TRANSFERENCIA' | 'CANCELAMENTO' | 'SUSPENSAO';
+  processCategory:
+    | 'INICIAL'
+    | 'RENOVACAO'
+    | 'ALTERACAO'
+    | 'TRANSFERENCIA'
+    | 'CANCELAMENTO'
+    | 'SUSPENSAO';
   requiredDocuments?: string[];
   estimatedDuration: number;
   durationUnit: 'DIAS' | 'SEMANAS' | 'MESES';
@@ -34,7 +40,13 @@ export interface LicenseProcessTypeRequestDTO {
   processName: string;
   processCode: string;
   description?: string;
-  processCategory: 'INICIAL' | 'RENOVACAO' | 'ALTERACAO' | 'TRANSFERENCIA' | 'CANCELAMENTO' | 'SUSPENSAO';
+  processCategory:
+    | 'INICIAL'
+    | 'RENOVACAO'
+    | 'ALTERACAO'
+    | 'TRANSFERENCIA'
+    | 'CANCELAMENTO'
+    | 'SUSPENSAO';
   requiredDocuments?: string[];
   estimatedDuration: number;
   durationUnit: 'DIAS' | 'SEMANAS' | 'MESES';

@@ -24,12 +24,15 @@ export async function GET(request: NextRequest) {
       active,
     });
 
-    if (licenseTypeProcessTypeId) params.append('licenseTypeProcessTypeId', licenseTypeProcessTypeId);
+    if (licenseTypeProcessTypeId)
+      params.append('licenseTypeProcessTypeId', licenseTypeProcessTypeId);
     if (feeCategoryId) params.append('feeCategoryId', feeCategoryId);
     if (name) params.append('name', name);
     if (feeType) params.append('feeType', feeType);
 
-    const response = await apiClient.get<WrapperListProcessTypeFeeDTO>(`/process-type-fees?${params.toString()}`);
+    const response = await apiClient.get<WrapperListProcessTypeFeeDTO>(
+      `/process-type-fees?${params.toString()}`,
+    );
 
     return NextResponse.json(response);
   } catch (error) {
@@ -42,9 +45,17 @@ export async function POST(request: NextRequest) {
   try {
     const body: ProcessTypeFeeRequestDTO = await request.json();
 
-    if (!body.licenseProcessTypeId || !body.feeCategoryId || !body.feeType || body.baseAmount === undefined) {
+    if (
+      !body.licenseProcessTypeId ||
+      !body.feeCategoryId ||
+      !body.feeType ||
+      body.baseAmount === undefined
+    ) {
       return NextResponse.json(
-        { error: 'Missing required fields: licenseProcessTypeId, feeCategoryId, feeType, baseAmount' },
+        {
+          error:
+            'Missing required fields: licenseProcessTypeId, feeCategoryId, feeType, baseAmount',
+        },
         { status: 400 },
       );
     }

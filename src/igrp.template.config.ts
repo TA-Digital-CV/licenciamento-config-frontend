@@ -48,7 +48,7 @@ export function createConfig(config: IGRPLayoutConfigArgs) {
     toasterConfig: {
       showToaster: true,
       position: 'bottom-right',
-      richColors: true,      
-    }
+      richColors: true,
+    },
   });
 }

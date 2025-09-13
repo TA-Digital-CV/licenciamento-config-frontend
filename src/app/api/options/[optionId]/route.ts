@@ -58,20 +58,20 @@ export async function PATCH(
   try {
     const { optionId } = await params;
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action'); // 'enable' or 'disable'
+    const action = searchParams.get('action'); // 'activate' or 'deactivate'
 
-    if (action === 'enable') {
-      const response = await apiClient.patch<OptionResponseDTO>(`/options/${optionId}/enable`);
+    if (action === 'activate') {
+      const response = await apiClient.patch<OptionResponseDTO>(`/options/${optionId}/activate`);
       return NextResponse.json(response);
     }
 
-    if (action === 'disable') {
-      const response = await apiClient.patch<OptionResponseDTO>(`/options/${optionId}/disable`);
+    if (action === 'deactivate') {
+      const response = await apiClient.patch<OptionResponseDTO>(`/options/${optionId}/deactivate`);
       return NextResponse.json(response);
     }
 
     return NextResponse.json(
-      { error: 'Invalid action. Use ?action=enable or ?action=disable' },
+      { error: 'Invalid action. Use ?action=activate or ?action=deactivate' },
       { status: 400 },
     );
   } catch (error) {

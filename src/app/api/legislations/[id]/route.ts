@@ -5,12 +5,9 @@ import {
   LegislationResponseDTO,
 } from '@/app/(myapp)/types/legislations.types';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'Legislation ID is required' }, { status: 400 });
@@ -25,12 +22,9 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: LegislationRequestDTO = await request.json();
 
     if (!id) {
@@ -53,12 +47,9 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'Legislation ID is required' }, { status: 400 });
@@ -73,12 +64,9 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -93,7 +81,10 @@ export async function PATCH(
       await apiClient.patch(`/legislations/${id}/deactivate`);
       return NextResponse.json({ message: 'Legislation deactivated successfully' });
     } else {
-      return NextResponse.json({ error: 'Invalid action. Use activate or deactivate' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid action. Use activate or deactivate' },
+        { status: 400 },
+      );
     }
   } catch (error) {
     console.error('Error updating legislation status:', error);

@@ -23,7 +23,7 @@ import { licenceTypeFormSchema } from '@/app/(myapp)/functions/validation.functi
 
 export default function LicenceTypeForm({ id }: { id?: string }) {
   const router = useRouter();
-  
+
   // Use the license types actions hook
   const {
     loading,
@@ -41,18 +41,18 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
   const [currencies, setCurrencies] = useState<Array<{ value: string; label: string }>>([]);
 
   // Convert categories and licensing models to options format
-  const categoryOptions = categories.map(cat => ({ value: cat.id, label: cat.name }));
+  const categoryOptions = categories.map((cat) => ({ value: cat.id, label: cat.name }));
   const licensingModelOptions = licensingModels;
   const validityUnitOptions = validityUnits;
   const currencyOptions = currencies;
 
   const formRef = useRef<any | null>(null);
-  
+
   // Estado para controlar o modelo de licenciamento selecionado
   const [selectedLicensingModel, setSelectedLicensingModel] = useState<string>(
-    initialValues.licensingModelKey || ''
+    initialValues.licensingModelKey || '',
   );
-  
+
   // Estados para controlar os switches
   const [isRenewable, setIsRenewable] = useState<boolean>(initialValues.renewable ?? true);
   const [hasFees, setHasFees] = useState<boolean>(initialValues.hasFees ?? false);
@@ -64,8 +64,10 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
     const event = arg as any;
     if (event && typeof event === 'object') {
       if ('checked' in event) return !!(event as any).checked;
-      if (event.target && typeof event.target.checked !== 'undefined') return !!event.target.checked;
-      if ('detail' in event && typeof (event as any).detail === 'boolean') return !!(event as any).detail;
+      if (event.target && typeof event.target.checked !== 'undefined')
+        return !!event.target.checked;
+      if ('detail' in event && typeof (event as any).detail === 'boolean')
+        return !!(event as any).detail;
     }
     return Boolean(arg);
   };
@@ -78,14 +80,20 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
     if (!checked) {
       // Se não for renovável, forçar autoRenewal = false
       setAutoRenewal(false);
-      formRef.current?.setValue?.('autoRenewal', false, { shouldDirty: true, shouldValidate: true });
+      formRef.current?.setValue?.('autoRenewal', false, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
     }
   };
 
   const handleAutoRenewalChange = (value: unknown) => {
     const checked = toBoolean(value);
     setAutoRenewal(checked);
-    formRef.current?.setValue?.('autoRenewal', checked, { shouldDirty: true, shouldValidate: true });
+    formRef.current?.setValue?.('autoRenewal', checked, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   const handleHasFeesChange = (value: unknown) => {
@@ -94,8 +102,14 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
     formRef.current?.setValue?.('hasFees', checked, { shouldDirty: true, shouldValidate: true });
     if (!checked) {
       // Limpar valores de taxas quando desativado
-      formRef.current?.setValue?.('baseFee', undefined, { shouldDirty: true, shouldValidate: true });
-      formRef.current?.setValue?.('currencyCode', undefined, { shouldDirty: true, shouldValidate: true });
+      formRef.current?.setValue?.('baseFee', undefined, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      formRef.current?.setValue?.('currencyCode', undefined, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
     }
   };
 
@@ -139,8 +153,8 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
           const list = Array.isArray(data)
             ? data
             : Array.isArray((data as any)?.content)
-            ? (data as any).content
-            : [];
+              ? (data as any).content
+              : [];
           if (!Array.isArray(list)) {
             console.warn('Formato inesperado de moedas:', data);
           }
@@ -158,35 +172,37 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
     };
     loadCurrencies();
   }, []);
-  
+
   // Normalizar chave de modelo de licenciamento (suporte PT/EN)
-  const normalizeLicensingModelKey = (key: string | undefined | null): 'TEMPORARY' | 'PERMANENT' | 'HYBRID' | '' => {
+  const normalizeLicensingModelKey = (
+    key: string | undefined | null,
+  ): 'TEMPORARY' | 'PERMANENT' | 'HYBRID' | '' => {
     const k = (key || '').toUpperCase();
     if (k === 'TEMPORARY' || k === 'PROVISORIO' || k === 'PROVISÓRIO') return 'TEMPORARY';
     if (k === 'PERMANENT' || k === 'DEFINITIVO' || k === 'PERMANENTE') return 'PERMANENT';
     if (k === 'HYBRID' || k === 'HIBRIDO' || k === 'HÍBRIDO') return 'HYBRID';
     return '';
   };
-  
+
   const normalizedModel = normalizeLicensingModelKey(selectedLicensingModel);
-  
+
   // Determinar regras baseadas no modelo de licenciamento
   const isTemporary = normalizedModel === 'TEMPORARY';
   const isPermanent = normalizedModel === 'PERMANENT';
   const isHybrid = normalizedModel === 'HYBRID';
-  
+
   // Campos obrigatórios por modelo
   const isValidityPeriodRequired = isTemporary || isHybrid;
   const isValidityUnitRequired = isTemporary || isHybrid;
   const isMaxProcessingDaysRequired = true; // Campo sempre obrigatório, funcionando independentemente
   const isRenewableRequired = isTemporary;
-  
+
   // Campos habilitados/desabilitados por modelo
   const isValidityPeriodDisabled = isPermanent;
   const isValidityUnitDisabled = isPermanent;
   const isRenewableDisabled = isPermanent;
   const isAutoRenewalDisabled = isPermanent || !isRenewable;
-  
+
   // Renovação automática permitida quando renovável está ativo (exceto PERMANENT)
   const isAutoRenewalAllowed = !isPermanent && isRenewable;
 
@@ -195,11 +211,17 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
     if (isPermanent) {
       if (isRenewable) {
         setIsRenewable(false);
-        formRef.current?.setValue?.('renewable', false, { shouldDirty: true, shouldValidate: true });
+        formRef.current?.setValue?.('renewable', false, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
       }
       if (autoRenewal) {
         setAutoRenewal(false);
-        formRef.current?.setValue?.('autoRenewal', false, { shouldDirty: true, shouldValidate: true });
+        formRef.current?.setValue?.('autoRenewal', false, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
       }
     }
   }, [isPermanent]);
@@ -250,9 +272,9 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
           options={licensingModelOptions}
           onValueChange={(value) => setSelectedLicensingModel(value as string)}
         />
-        <IGRPInputNumber 
-          name="validityPeriod" 
-          label="Período de Validade" 
+        <IGRPInputNumber
+          name="validityPeriod"
+          label="Período de Validade"
           required={isValidityPeriodRequired}
           disabled={isValidityPeriodDisabled}
           helperText={isPermanent ? 'Opcional para licenças permanentes' : undefined}
@@ -266,44 +288,36 @@ export default function LicenceTypeForm({ id }: { id?: string }) {
           options={validityUnitOptions}
           helperText={isPermanent ? 'Opcional para licenças permanentes' : undefined}
         />
-        <IGRPSwitch 
-          name="renewable" 
-          label="Renovável" 
+        <IGRPSwitch
+          name="renewable"
+          label="Renovável"
           disabled={isRenewableDisabled}
           onChange={handleRenewableChange}
         />
-        <IGRPSwitch 
-          name="autoRenewal" 
-          label="Renovação Automática" 
+        <IGRPSwitch
+          name="autoRenewal"
+          label="Renovação Automática"
           disabled={isAutoRenewalDisabled}
-          helperText={!isAutoRenewalAllowed ? 'Disponível quando a renovação está ativada' : undefined}
+          helperText={
+            !isAutoRenewalAllowed ? 'Disponível quando a renovação está ativada' : undefined
+          }
           onChange={handleAutoRenewalChange}
         />
-        <IGRPSwitch 
-          name="requiresInspection" 
-          label="Requer Inspeção" 
-        />
-        <IGRPSwitch 
-          name="requiresPublicConsultation" 
-          label="Requer Consulta Pública" 
-        />
-        <IGRPInputNumber 
-          name="maxProcessingDays" 
-          label="Prazo Máximo (dias)" 
+        <IGRPSwitch name="requiresInspection" label="Requer Inspeção" />
+        <IGRPSwitch name="requiresPublicConsultation" label="Requer Consulta Pública" />
+        <IGRPInputNumber
+          name="maxProcessingDays"
+          label="Prazo Máximo (dias)"
           required={isMaxProcessingDaysRequired}
           helperText="Prazo máximo para processamento da licença"
         />
-        <IGRPSwitch 
-          name="hasFees" 
-          label="Possui Taxas" 
-          onChange={handleHasFeesChange}
-        />
+        <IGRPSwitch name="hasFees" label="Possui Taxas" onChange={handleHasFeesChange} />
         {hasFees && (
           <>
-            <IGRPInputNumber 
-              name="baseFee" 
-              label="Valor Base" 
-              required 
+            <IGRPInputNumber
+              name="baseFee"
+              label="Valor Base"
+              required
               helperText="Valor base da taxa em formato decimal"
             />
             <IGRPSelect

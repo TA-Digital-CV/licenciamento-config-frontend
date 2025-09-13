@@ -44,7 +44,9 @@ export default function Categorylist({ parentId }: { parentId?: string }) {
 
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active');
-  const [sectorFilter, setSectorFilter] = useState<string>(() => searchParams.get('sectorId') || '');
+  const [sectorFilter, setSectorFilter] = useState<string>(
+    () => searchParams.get('sectorId') || '',
+  );
   const [sectorOptions, setSectorOptions] = useState<{ value: string; label: string }[]>([]);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
@@ -119,8 +121,8 @@ export default function Categorylist({ parentId }: { parentId?: string }) {
           statusFilter === 'all'
             ? true
             : statusFilter === 'active'
-            ? updated.active === true
-            : updated.active === false; // 'inactive'
+              ? updated.active === true
+              : updated.active === false; // 'inactive'
 
         const includeBySector = sectorFilter ? updated.sectorId === sectorFilter : true;
 

@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
     if (model) params.append('model', model);
     if (vitalityFlag) params.append('vitalityFlag', vitalityFlag);
 
-    const response = await apiClient.get<WrapperListLicenseParameterDTO>(`/license-parameters?${params.toString()}`);
+    const response = await apiClient.get<WrapperListLicenseParameterDTO>(
+      `/license-parameters?${params.toString()}`,
+    );
 
     return NextResponse.json(response);
   } catch (error) {

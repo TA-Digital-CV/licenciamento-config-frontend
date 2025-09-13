@@ -234,7 +234,9 @@ export default function CategoryForm({ id }: { id?: string }) {
         <IGRPSelect
           name="parentId"
           label="Categoria Pai"
-          placeholder={selectedSectorId ? 'Selecione a categoria pai' : 'Selecione primeiro um setor'}
+          placeholder={
+            selectedSectorId ? 'Selecione a categoria pai' : 'Selecione primeiro um setor'
+          }
           options={parentOptions}
           disabled={!selectedSectorId}
         />

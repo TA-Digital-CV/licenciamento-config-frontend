@@ -7,7 +7,10 @@ import {
   IGRPSelect,
   IGRPTextarea,
 } from '@igrp/igrp-framework-react-design-system';
-import { LegislationRequestDTO, LegislationResponseDTO } from '@/app/(myapp)/types/legislations.types';
+import {
+  LegislationRequestDTO,
+  LegislationResponseDTO,
+} from '@/app/(myapp)/types/legislations.types';
 
 type Option = { value: string; label: string };
 
@@ -138,13 +141,8 @@ export default function LegislationForm({
           <IGRPInputText name="documentUrl" label="URL (gerado)" readOnly />
         </div>
 
-        <IGRPTextarea
-          name="description"
-          label="Descrição"
-          rows={3}
-          className="md:col-span-2"
-        />
-        
+        <IGRPTextarea name="description" label="Descrição" rows={3} className="md:col-span-2" />
+
         <IGRPInputText
           name="priority"
           label="Prioridade"

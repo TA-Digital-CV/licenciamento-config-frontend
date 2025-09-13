@@ -34,7 +34,7 @@ export async function getSession() {
   let session: ExtendedSession | null;
   const isPreviewMode = process.env.IGRP_PREVIEW_MODE === 'true';
 
-  console.log({ isPreviewMode })
+  console.log({ isPreviewMode });
 
   if (isPreviewMode) return (session = null);
 
@@ -49,7 +49,7 @@ export async function getSession() {
     session = null;
   }
 
-  console.log({ session })
+  console.log({ session });
 
   return session;
 }

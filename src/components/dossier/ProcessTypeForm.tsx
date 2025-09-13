@@ -3,6 +3,7 @@ import React from 'react';
 import {
   IGRPForm,
   IGRPSelect,
+  IGRPInputText,
   IGRPTextarea,
   IGRPSwitch,
 } from '@igrp/igrp-framework-react-design-system';
@@ -14,6 +15,7 @@ type Props = {
   editingInitial: any;
   editingIndex: number;
   processTypeOptions: Option[];
+  categoryOptions: Option[];
   savingProcess: boolean;
   onSubmit: (values: any) => void | Promise<void>;
   onCancel: () => void;
@@ -24,6 +26,7 @@ export default function ProcessTypeForm({
   editingInitial,
   editingIndex,
   processTypeOptions,
+  categoryOptions,
   savingProcess,
   onSubmit,
   onCancel,
@@ -43,15 +46,16 @@ export default function ProcessTypeForm({
         formRef={formRef}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <IGRPInputText name="processName" label="Nome do Processo" placeholder="Nome" required />
           <IGRPSelect
-            name="processType"
-            label="Tipo de Processo"
+            name="processCategory"
+            label="Categoria do Processo"
             placeholder="Selecione..."
-            options={processTypeOptions}
+            options={categoryOptions}
             required
           />
         </div>
-        <IGRPTextarea name="notes" label="Notas" placeholder="Observações adicionais" />
+        <IGRPTextarea name="description" label="Descrição" placeholder="Descrição do processo" />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <IGRPSwitch name="active" checked={editingInitial?.active ?? true} label="Ativo" />

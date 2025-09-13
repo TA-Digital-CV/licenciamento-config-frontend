@@ -17,7 +17,11 @@ import {
   IGRPTextarea,
 } from '@igrp/igrp-framework-react-design-system';
 import { useOptionsActions } from '@/app/(myapp)/actions/options.actions';
-import { transformOptionToFormItem, loadOptionById, updateOptionById } from '@/app/(myapp)/functions/api.functions';
+import {
+  transformOptionToFormItem,
+  loadOptionById,
+  updateOptionById,
+} from '@/app/(myapp)/functions/api.functions';
 import { optionFormSchema } from '@/app/(myapp)/functions/validation.functions';
 import { OptionResponseDTO, OptionRequestDTO } from '@/app/(myapp)/types/options.types';
 
@@ -30,11 +34,24 @@ const safeStringify = (obj: any): string => {
   }
 };
 
-export default function Optionform({ id, ccode, mode }: { id?: string; ccode?: string; mode?: 'create' | 'edit' }) {
+export default function Optionform({
+  id,
+  ccode,
+  mode,
+}: {
+  id?: string;
+  ccode?: string;
+  mode?: 'create' | 'edit';
+}) {
   const router = useRouter();
   const effectiveCode = ccode || id;
   if (process.env.NODE_ENV !== 'production') {
-    console.log('🚀 OPTIONFORM: Component function called with:', { id, ccode, effectiveCode, mode });
+    console.log('🚀 OPTIONFORM: Component function called with:', {
+      id,
+      ccode,
+      effectiveCode,
+      mode,
+    });
   }
 
   const isCreateMode = mode === 'create' || (!id && !ccode);
@@ -88,7 +105,9 @@ export default function Optionform({ id, ccode, mode }: { id?: string; ccode?: s
     (data: any) => {
       const normalized = {
         ...data,
-        ccode: String(data?.ccode ?? '').trim().toUpperCase(),
+        ccode: String(data?.ccode ?? '')
+          .trim()
+          .toUpperCase(),
         options: Array.isArray(data?.options)
           ? data.options.map((opt: any) => ({
               ckey: String(opt?.ckey ?? '').trim(),
@@ -98,8 +117,8 @@ export default function Optionform({ id, ccode, mode }: { id?: string; ccode?: s
                 typeof opt?.sortOrder === 'number'
                   ? opt.sortOrder
                   : opt?.sortOrder
-                  ? Number(opt.sortOrder)
-                  : undefined,
+                    ? Number(opt.sortOrder)
+                    : undefined,
               active: Boolean(opt?.active),
               description: typeof opt?.description === 'string' ? opt.description : '',
               metadata: typeof opt?.metadata === 'string' ? opt.metadata : '',

@@ -22,9 +22,12 @@ export async function GET(request: NextRequest) {
 
     // Handle multiple codes request
     if (codes) {
-      const codeList = codes.split(',').map(code => code.trim()).filter(Boolean);
+      const codeList = codes
+        .split(',')
+        .map((code) => code.trim())
+        .filter(Boolean);
       const optionSets: Record<string, { items: any[] }> = {};
-      
+
       // Process each code separately
       for (const code of codeList) {
         try {
@@ -35,15 +38,18 @@ export async function GET(request: NextRequest) {
             ccode: code,
           });
 
-          const response = await apiClient.get<WrapperListOptionsDTO>(`/options?${params.toString()}`);
-          
+          const response = await apiClient.get<WrapperListOptionsDTO>(
+            `/options?${params.toString()}`,
+          );
+
           // Transform response to match expected format
           optionSets[code] = {
-            items: response.data?.content?.map((item: { ckey: any; cvalue: any; }) => ({
-              key: item.ckey,
-              value: item.cvalue,
-              ...item
-            })) || []
+            items:
+              response.data?.content?.map((item: { ckey: any; cvalue: any }) => ({
+                key: item.ckey,
+                value: item.cvalue,
+                ...item,
+              })) || [],
           };
         } catch (error) {
           console.error(`Error fetching options for code ${code}:`, error);

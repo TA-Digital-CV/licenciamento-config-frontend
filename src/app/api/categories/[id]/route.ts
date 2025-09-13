@@ -103,7 +103,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       sectorId: body.sectorId,
     };
 
-    let response = await apiClient.put<CategoryResponseDTO | undefined>(`/categories/${id}`, categoryData);
+    let response = await apiClient.put<CategoryResponseDTO | undefined>(
+      `/categories/${id}`,
+      categoryData,
+    );
 
     // Alguns backends retornam 204/sem body no update. Buscar a categoria para construir resposta.
     if (!response || !(response as any)?.id) {
@@ -113,14 +116,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const transformedResponse = {
       id: (response as CategoryResponseDTO).id,
       name: (response as CategoryResponseDTO).name,
-      description: ((response as any))?.description ?? '',
+      description: (response as any)?.description ?? '',
       code: (response as CategoryResponseDTO).code,
       active: true,
       level: (response as CategoryResponseDTO).level,
-      sortOrder: ((response as any))?.level ?? 0,
+      sortOrder: (response as any)?.level ?? 0,
       metadata: (response as CategoryResponseDTO).metadata,
       path: (response as CategoryResponseDTO).path,
-      parentId: ((response as any))?.parentId ?? null,
+      parentId: (response as any)?.parentId ?? null,
       sectorId: (response as CategoryResponseDTO).sectorId,
       sectorName: (response as CategoryResponseDTO).sectorName,
       createdAt: new Date().toISOString(),
@@ -139,9 +142,27 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     } catch {
       details = error?.body || undefined;
     }
-    return NextResponse.json(
-      { message: 'Failed to update category', details },
-      { status },
-    );
+    return NextResponse.json({ message: 'Failed to update category', details }, { status });
+  }
+}
+
+// DELETE /api/categories/[id]
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
+    }
+
+    await apiClient.delete(`/categories/${id}`);
+
+    return NextResponse.json({ message: 'Category deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    return NextResponse.json({ error: 'Failed to delete category' }, { status: 500 });
   }
 }

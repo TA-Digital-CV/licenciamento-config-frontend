@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '../../../../(myapp)/lib/api-client';
-import {
-  LicenseTypeResponseDTO,
-} from '../../../../(myapp)/types/licence-types.types';
+import { LicenseTypeResponseDTO } from '../../../../(myapp)/types/licence-types.types';
 
 // PATCH /api/licence-types/[id]/disable
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'License type ID is required' }, { status: 400 });
@@ -15,7 +13,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // Call backend to deactivate license type
     await apiClient.patch(`/license-types/${id}/desativar`);
-    
+
     // Fetch updated license type
     const response = await apiClient.get<LicenseTypeResponseDTO>(`/license-types/${id}`);
 
@@ -48,9 +46,6 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json(transformedResponse);
   } catch (error) {
     console.error('Error disabling license type:', error);
-    return NextResponse.json(
-      { error: 'Erro ao desativar tipo de licença' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro ao desativar tipo de licença' }, { status: 500 });
   }
 }

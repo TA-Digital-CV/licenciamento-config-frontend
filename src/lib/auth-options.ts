@@ -82,11 +82,10 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',      
+        secure: process.env.NODE_ENV === 'production',
         ...(process.env.NODE_ENV === 'production' && process.env.IGRP_NEXTAUTH_CALLBACK
           ? { domain: process.env.IGRP_NEXTAUTH_CALLBACK }
-          : {}
-        ),
+          : {}),
       },
     },
   },

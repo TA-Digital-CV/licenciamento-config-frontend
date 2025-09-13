@@ -120,10 +120,12 @@ export default function Optionslist({ code }: { code?: string }) {
   // Handlers de paginação
   const canPrev = pagination.pageNumber > 0;
   const canNext = pagination.pageNumber + 1 < pagination.totalPages;
-  const goPrev = () =>
-    setPagination((p) => ({ ...p, pageNumber: Math.max(0, p.pageNumber - 1) }));
+  const goPrev = () => setPagination((p) => ({ ...p, pageNumber: Math.max(0, p.pageNumber - 1) }));
   const goNext = () =>
-    setPagination((p) => ({ ...p, pageNumber: Math.min(Math.max(0, p.totalPages - 1), p.pageNumber + 1) }));
+    setPagination((p) => ({
+      ...p,
+      pageNumber: Math.min(Math.max(0, p.totalPages - 1), p.pageNumber + 1),
+    }));
   const changePageSize = (size: number) =>
     setPagination((p) => ({ ...p, pageSize: size, pageNumber: 0 }));
 
@@ -136,7 +138,8 @@ export default function Optionslist({ code }: { code?: string }) {
         <>
           <div className="mb-3 flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
-              Página {pagination.totalPages > 0 ? pagination.pageNumber + 1 : 0} de {pagination.totalPages}
+              Página {pagination.totalPages > 0 ? pagination.pageNumber + 1 : 0} de{' '}
+              {pagination.totalPages}
             </div>
             <div className="flex items-center gap-2">
               <label className="text-xs text-muted-foreground" htmlFor="page-size-select">
@@ -247,7 +250,8 @@ export default function Optionslist({ code }: { code?: string }) {
               Anterior
             </button>
             <div className="text-xs text-muted-foreground">
-              Página {pagination.totalPages > 0 ? pagination.pageNumber + 1 : 0} de {pagination.totalPages}
+              Página {pagination.totalPages > 0 ? pagination.pageNumber + 1 : 0} de{' '}
+              {pagination.totalPages}
             </div>
             <button
               type="button"

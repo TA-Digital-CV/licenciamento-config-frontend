@@ -12,7 +12,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "pnpm format && next build",
+    "build": "yarn format && next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",

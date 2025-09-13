@@ -27,7 +27,9 @@ export async function GET(request: NextRequest) {
     if (licenseTypeId) params.append('licenseTypeId', licenseTypeId);
     if (name) params.append('name', name);
 
-    const response = await apiClient.get<WrapperListLegislationDTO>(`/legislations?${params.toString()}`);
+    const response = await apiClient.get<WrapperListLegislationDTO>(
+      `/legislations?${params.toString()}`,
+    );
 
     return NextResponse.json(response);
   } catch (error) {

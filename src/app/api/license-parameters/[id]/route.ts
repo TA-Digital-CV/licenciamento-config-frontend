@@ -5,12 +5,9 @@ import {
   LicenseParameterResponseDTO,
 } from '@/app/(myapp)/types/license-parameters.types';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'License parameter ID is required' }, { status: 400 });
@@ -25,12 +22,9 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body: LicenseParameterRequestDTO = await request.json();
 
     if (!id) {
@@ -44,7 +38,10 @@ export async function PUT(
       );
     }
 
-    const response = await apiClient.put<LicenseParameterResponseDTO>(`/license-parameters/${id}`, body);
+    const response = await apiClient.put<LicenseParameterResponseDTO>(
+      `/license-parameters/${id}`,
+      body,
+    );
 
     return NextResponse.json(response);
   } catch (error) {
@@ -53,12 +50,9 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: 'License parameter ID is required' }, { status: 400 });
@@ -73,12 +67,9 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
 
@@ -93,10 +84,16 @@ export async function PATCH(
       await apiClient.patch(`/license-parameters/${id}/deactivate`);
       return NextResponse.json({ message: 'License parameter deactivated successfully' });
     } else {
-      return NextResponse.json({ error: 'Invalid action. Use activate or deactivate' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid action. Use activate or deactivate' },
+        { status: 400 },
+      );
     }
   } catch (error) {
     console.error('Error updating license parameter status:', error);
-    return NextResponse.json({ error: 'Failed to update license parameter status' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update license parameter status' },
+      { status: 500 },
+    );
   }
 }

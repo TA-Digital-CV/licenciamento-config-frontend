@@ -2,65 +2,56 @@
 
 export interface ProcessTypeFeeResponseDTO {
   id: string;
-  licenseProcessTypeId: string;
+  processTypeId: string;
   feeCategoryId: string;
-  feeCategoryName?: string;
-  feeType: 'FIXA' | 'VARIAVEL' | 'PERCENTUAL' | 'CALCULADA';
-  baseAmount: number;
-  minimumAmount?: number;
-  maximumAmount?: number;
-  calculationFormula?: string;
-  currencyCode: string;
-  taxRate?: number;
-  discountRate?: number;
-  validFrom: string;
-  validUntil?: string;
-  paymentTermDays: number;
-  isRefundable: boolean;
-  refundConditions?: string;
-  exemptionCriteria?: string;
+  amount: number;
+  currency: string;
+  isPercentage: boolean;
+  minAmount?: number;
+  maxAmount?: number;
+  calculationMethod: string;
+  applicableConditions?: string;
   priority: number;
   active: boolean;
+  validFrom: string;
+  validTo?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
-  metadata?: Record<string, unknown>;
+  createdBy?: string;
+  updatedBy?: string;
+  // Dados relacionados
+  processType?: {
+    id: string;
+    name: string;
+    code: string;
+  };
+  feeCategory?: {
+    id: string;
+    name: string;
+    code: string;
+    categoryType: string;
+  };
 }
 
 export interface ProcessTypeFeeRequestDTO {
-  licenseProcessTypeId: string;
+  processTypeId: string;
   feeCategoryId: string;
-  feeType: 'FIXA' | 'VARIAVEL' | 'PERCENTUAL' | 'CALCULADA';
-  baseAmount: number;
-  minimumAmount?: number;
-  maximumAmount?: number;
-  calculationFormula?: string;
-  currencyCode: string;
-  taxRate?: number;
-  discountRate?: number;
-  validFrom: string;
-  validUntil?: string;
-  paymentTermDays: number;
-  isRefundable: boolean;
-  refundConditions?: string;
-  exemptionCriteria?: string;
+  amount: number;
+  currency: string;
+  isPercentage: boolean;
+  minAmount?: number;
+  maxAmount?: number;
+  calculationMethod: string;
+  applicableConditions?: string;
   priority: number;
+  active: boolean;
+  validFrom: string;
+  validTo?: string;
   metadata?: Record<string, unknown>;
-}
-
-export interface ProcessTypeFeeCalculationRequestDTO {
-  licenseProcessTypeId: string;
-  baseValue?: number;
-  calculationParameters?: Record<string, unknown>;
-}
-
-export interface ProcessTypeFeeCalculationResponseDTO {
-  totalAmount: number;
-  baseAmount: number;
-  taxAmount: number;
-  discountAmount: number;
-  finalAmount: number;
-  currencyCode: string;
-  calculationDetails: Record<string, unknown>;
+  licenseProcessTypeId?: string;
+  feeType?: string;
+  baseAmount?: number;
 }
 
 export interface WrapperListProcessTypeFeeDTO {
@@ -71,4 +62,38 @@ export interface WrapperListProcessTypeFeeDTO {
   last: boolean;
   first: boolean;
   content: ProcessTypeFeeResponseDTO[];
+}
+
+export interface FeeCalculationResult {
+  totalAmount: number;
+  currency: string;
+  breakdown: Array<{
+    feeCategoryId: string;
+    feeCategoryName: string;
+    baseAmount: number;
+    calculatedAmount: number;
+    isPercentage: boolean;
+    calculationMethod: string;
+  }>;
+  appliedConditions: string[];
+}
+
+export interface FeesByProcessTypeDTO {
+  processTypeId: string;
+  processTypeName: string;
+  fees: ProcessTypeFeeResponseDTO[];
+  totalAmount: number;
+}
+
+export interface FeeDuplicateCheckResult {
+  isDuplicate: boolean;
+  existingFeeId?: string;
+  conflictReason?: string;
+}
+
+export interface FeeCalculationRequestDTO {
+  processTypeId: string;
+  quantity?: number;
+  baseValue?: number;
+  additionalParams?: Record<string, unknown>;
 }

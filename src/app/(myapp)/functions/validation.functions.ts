@@ -51,235 +51,303 @@ export const optionFormSchema = z
   });
 
 // Schema para formulário de tipos de licença com validações condicionais
-export const licenceTypeFormSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().optional().default(''),
-  code: z.string().min(1, 'Código é obrigatório'),
-  categoryId: z.string().min(1, 'Categoria é obrigatória'),
-  // Required by backend
-  licensingModelKey: z.string().min(1, 'Modelo de licenciamento é obrigatório'),
-  validityPeriod: z.coerce.number().int().min(1, 'Período de validade é obrigatório').optional(),
-  validityUnitKey: z.string().optional(),
-  // Optional configuration
-  renewable: z.boolean().default(false),
-  autoRenewal: z.boolean().default(false),
-  requiresInspection: z.boolean().default(false),
-  requiresPublicConsultation: z.boolean().default(false),
-  maxProcessingDays: z.coerce.number().int().min(1, 'Prazo máximo deve ser maior que zero'),
-  hasFees: z.boolean().default(false),
-  baseFee: z.coerce.number().min(0, 'Valor inválido').optional(),
-  currencyCode: z.string().optional().default('CVE'),
-  sortOrder: z.coerce.number().int().optional(),
-  active: z.boolean().default(true),
-  metadata: z.string().optional().default(''),
-}).superRefine((val, ctx) => {
-  // Validações condicionais baseadas no modelo de licenciamento
-  const licensingModel = val.licensingModelKey;
-  const isTemporary = licensingModel === 'TEMPORARY';
-  const isPermanent = licensingModel === 'PERMANENT';
-  const isHybrid = licensingModel === 'HYBRID';
-  
-  // Validações para modelo TEMPORARY (Provisório)
-  if (isTemporary) {
-    if (!val.validityPeriod || val.validityPeriod <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Período de validade é obrigatório para modelo Provisório',
-        path: ['validityPeriod'],
-      });
+export const licenceTypeFormSchema = z
+  .object({
+    name: z.string().min(1, 'Nome é obrigatório'),
+    description: z.string().optional().default(''),
+    code: z.string().min(1, 'Código é obrigatório'),
+    categoryId: z.string().min(1, 'Categoria é obrigatória'),
+    // Required by backend
+    licensingModelKey: z.string().min(1, 'Modelo de licenciamento é obrigatório'),
+    validityPeriod: z.coerce.number().int().min(1, 'Período de validade é obrigatório').optional(),
+    validityUnitKey: z.string().optional(),
+    // Optional configuration
+    renewable: z.boolean().default(false),
+    autoRenewal: z.boolean().default(false),
+    requiresInspection: z.boolean().default(false),
+    requiresPublicConsultation: z.boolean().default(false),
+    maxProcessingDays: z.coerce.number().int().min(1, 'Prazo máximo deve ser maior que zero'),
+    hasFees: z.boolean().default(false),
+    baseFee: z.coerce.number().min(0, 'Valor inválido').optional(),
+    currencyCode: z.string().optional().default('CVE'),
+    sortOrder: z.coerce.number().int().optional(),
+    active: z.boolean().default(true),
+    metadata: z.string().optional().default(''),
+  })
+  .superRefine((val, ctx) => {
+    // Validações condicionais baseadas no modelo de licenciamento
+    const licensingModel = val.licensingModelKey;
+    const isTemporary = licensingModel === 'TEMPORARY';
+    const isPermanent = licensingModel === 'PERMANENT';
+    const isHybrid = licensingModel === 'HYBRID';
+
+    // Validações para modelo TEMPORARY (Provisório)
+    if (isTemporary) {
+      if (!val.validityPeriod || val.validityPeriod <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Período de validade é obrigatório para modelo Provisório',
+          path: ['validityPeriod'],
+        });
+      }
+      if (!val.validityUnitKey || val.validityUnitKey.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Unidade de validade é obrigatória para modelo Provisório',
+          path: ['validityUnitKey'],
+        });
+      }
     }
-    if (!val.validityUnitKey || val.validityUnitKey.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Unidade de validade é obrigatória para modelo Provisório',
-        path: ['validityUnitKey'],
-      });
+
+    // Validações para modelo HYBRID (Híbrido)
+    if (isHybrid) {
+      if (!val.validityPeriod || val.validityPeriod <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Período de validade é obrigatório para modelo Híbrido',
+          path: ['validityPeriod'],
+        });
+      }
+      if (!val.validityUnitKey || val.validityUnitKey.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Unidade de validade é obrigatória para modelo Híbrido',
+          path: ['validityUnitKey'],
+        });
+      }
     }
-  }
-  
-  // Validações para modelo HYBRID (Híbrido)
-  if (isHybrid) {
-    if (!val.validityPeriod || val.validityPeriod <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Período de validade é obrigatório para modelo Híbrido',
-        path: ['validityPeriod'],
-      });
+
+    // Validações para modelo PERMANENT (Definitivo)
+    if (isPermanent) {
+      // Para modelo permanente, renovação automática deve estar desabilitada
+      if (val.autoRenewal) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Renovação automática não é permitida para modelo Definitivo',
+          path: ['autoRenewal'],
+        });
+      }
     }
-    if (!val.validityUnitKey || val.validityUnitKey.trim() === '') {
+
+    // Renovação automática só é permitida se renovável estiver ativado (exceto PERMANENT)
+    if (!isPermanent && val.autoRenewal && !val.renewable) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Unidade de validade é obrigatória para modelo Híbrido',
-        path: ['validityUnitKey'],
-      });
-    }
-  }
-  
-  // Validações para modelo PERMANENT (Definitivo)
-  if (isPermanent) {
-    // Para modelo permanente, renovação automática deve estar desabilitada
-    if (val.autoRenewal) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Renovação automática não é permitida para modelo Definitivo',
+        message: 'Renovação automática só é permitida quando renovável estiver ativado',
         path: ['autoRenewal'],
       });
     }
-  }
-  
-  // Renovação automática só é permitida se renovável estiver ativado (exceto PERMANENT)
-  if (!isPermanent && val.autoRenewal && !val.renewable) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Renovação automática só é permitida quando renovável estiver ativado',
-      path: ['autoRenewal'],
-    });
-  }
-  
-  // O campo maxProcessingDays agora funciona de forma independente
-  
-  // Validações para taxas
-  if (val.hasFees) {
-    if (val.baseFee === undefined || val.baseFee === null || val.baseFee <= 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Valor base é obrigatório quando possui taxas',
-        path: ['baseFee'],
-      });
+
+    // O campo maxProcessingDays agora funciona de forma independente
+
+    // Validações para taxas
+    if (val.hasFees) {
+      if (val.baseFee === undefined || val.baseFee === null || val.baseFee <= 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Valor base é obrigatório quando possui taxas',
+          path: ['baseFee'],
+        });
+      }
+      if (!val.currencyCode || val.currencyCode.trim() === '') {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Moeda é obrigatória quando possui taxas',
+          path: ['currencyCode'],
+        });
+      }
     }
-    if (!val.currencyCode || val.currencyCode.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Moeda é obrigatória quando possui taxas',
-        path: ['currencyCode'],
-      });
+
+    // Validar que prazos de processamento não excedem período de validade
+    if (val.maxProcessingDays && val.validityPeriod && val.validityUnitKey) {
+      // Converter período de validade para dias para comparação
+      let validityInDays = val.validityPeriod;
+      if (val.validityUnitKey === 'MONTHS') {
+        validityInDays = val.validityPeriod * 30;
+      } else if (val.validityUnitKey === 'YEARS') {
+        validityInDays = val.validityPeriod * 365;
+      } else if (val.validityUnitKey === 'WEEKS') {
+        validityInDays = val.validityPeriod * 7;
+      }
+
+      if (val.maxProcessingDays > validityInDays) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Prazo de processamento não pode exceder o período de validade',
+          path: ['maxProcessingDays'],
+        });
+      }
     }
-  }
-  
-  // Validar que prazos de processamento não excedem período de validade
-  if (val.maxProcessingDays && val.validityPeriod && val.validityUnitKey) {
-    // Converter período de validade para dias para comparação
-    let validityInDays = val.validityPeriod;
-    if (val.validityUnitKey === 'MONTHS') {
-      validityInDays = val.validityPeriod * 30;
-    } else if (val.validityUnitKey === 'YEARS') {
-      validityInDays = val.validityPeriod * 365;
-    } else if (val.validityUnitKey === 'WEEKS') {
-      validityInDays = val.validityPeriod * 7;
+
+    // Validar metadata JSON quando preenchida
+    if (val.metadata && val.metadata.trim() !== '') {
+      try {
+        JSON.parse(val.metadata);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Metadata deve ser um JSON válido',
+          path: ['metadata'],
+        });
+      }
     }
-    
-    if (val.maxProcessingDays > validityInDays) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Prazo de processamento não pode exceder o período de validade',
-        path: ['maxProcessingDays'],
-      });
-    }
-  }
-  
-  // Validar metadata JSON quando preenchida
-  if (val.metadata && val.metadata.trim() !== '') {
-    try {
-      JSON.parse(val.metadata);
-    } catch {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Metadata deve ser um JSON válido',
-        path: ['metadata'],
-      });
-    }
-  }
-});
+  });
 
 // Schema para formulário de legislações com validações
-export const legislationFormSchema = z.object({
-  title: z.string().min(1, 'Título é obrigatório').transform((s) => s.trim()),
-  description: z.string().optional().default(''),
-  legislationType: z.string().min(1, 'Tipo de legislação é obrigatório'),
-  publicationDate: z.string().min(1, 'Data de publicação é obrigatória'),
-  effectiveDate: z.string().min(1, 'Data de vigência é obrigatória'),
-  expirationDate: z.string().optional(),
-  documentNumber: z.string().min(1, 'Número do documento é obrigatório').transform((s) => s.trim()),
-  issuingAuthority: z.string().min(1, 'Autoridade emissora é obrigatória').transform((s) => s.trim()),
-  legalFramework: z.string().optional().default(''),
-  scope: z.string().min(1, 'Âmbito é obrigatório').transform((s) => s.trim()),
-  status: z.enum(['VIGENTE', 'REVOGADA', 'SUSPENSA', 'EM_TRAMITACAO'], {
-    errorMap: () => ({ message: 'Status inválido' })
-  }).default('EM_TRAMITACAO'),
-  priority: z.enum(['ALTA', 'MEDIA', 'BAIXA'], {
-    errorMap: () => ({ message: 'Prioridade inválida' })
-  }).default('MEDIA'),
-  documentUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-  relatedLegislationIds: z.array(z.string()).optional().default([]),
-  tags: z.array(z.string()).optional().default([]),
-  active: z.boolean().default(true),
-  sortOrder: z.coerce.number().int().min(0, 'Ordenação inválida').optional(),
-  metadata: z.string().optional().default(''),
-}).superRefine((val, ctx) => {
-  // Validar datas
-  const publicationDate = new Date(val.publicationDate);
-  const effectiveDate = new Date(val.effectiveDate);
-  const expirationDate = val.expirationDate ? new Date(val.expirationDate) : null;
-  
-  // Data de vigência não pode ser anterior à data de publicação
-  if (effectiveDate < publicationDate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Data de vigência não pode ser anterior à data de publicação',
-      path: ['effectiveDate'],
-    });
-  }
-  
-  // Data de expiração não pode ser anterior à data de vigência
-  if (expirationDate && expirationDate < effectiveDate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Data de expiração não pode ser anterior à data de vigência',
-      path: ['expirationDate'],
-    });
-  }
-  
-  // Validar status vs data de expiração
-  if (val.status === 'VIGENTE' && expirationDate && expirationDate < new Date()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Legislação não pode estar vigente com data de expiração no passado',
-      path: ['status'],
-    });
-  }
-  
-  // Validar URL do documento
-  if (val.documentUrl && val.documentUrl.trim() !== '') {
-    try {
-      new URL(val.documentUrl);
-    } catch {
+export const legislationFormSchema = z
+  .object({
+    title: z
+      .string()
+      .min(1, 'Título é obrigatório')
+      .transform((s) => s.trim()),
+    description: z.string().optional().default(''),
+    legislationType: z.string().min(1, 'Tipo de legislação é obrigatório'),
+    publicationDate: z.string().min(1, 'Data de publicação é obrigatória'),
+    effectiveDate: z.string().min(1, 'Data de vigência é obrigatória'),
+    expirationDate: z.string().optional(),
+    documentNumber: z
+      .string()
+      .min(1, 'Número do documento é obrigatório')
+      .transform((s) => s.trim()),
+    issuingAuthority: z
+      .string()
+      .min(1, 'Autoridade emissora é obrigatória')
+      .transform((s) => s.trim()),
+    legalFramework: z.string().optional().default(''),
+    scope: z
+      .string()
+      .min(1, 'Âmbito é obrigatório')
+      .transform((s) => s.trim()),
+    status: z
+      .enum(['VIGENTE', 'REVOGADA', 'SUSPENSA', 'EM_TRAMITACAO'], {
+        errorMap: () => ({ message: 'Status inválido' }),
+      })
+      .default('EM_TRAMITACAO'),
+    priority: z
+      .enum(['ALTA', 'MEDIA', 'BAIXA'], {
+        errorMap: () => ({ message: 'Prioridade inválida' }),
+      })
+      .default('MEDIA'),
+    documentUrl: z.string().url('URL inválida').optional().or(z.literal('')),
+    relatedLegislationIds: z.array(z.string()).optional().default([]),
+    tags: z.array(z.string()).optional().default([]),
+    active: z.boolean().default(true),
+    sortOrder: z.coerce.number().int().min(0, 'Ordenação inválida').optional(),
+    metadata: z.string().optional().default(''),
+  })
+  .superRefine((val, ctx) => {
+    // Validar datas
+    const publicationDate = new Date(val.publicationDate);
+    const effectiveDate = new Date(val.effectiveDate);
+    const expirationDate = val.expirationDate ? new Date(val.expirationDate) : null;
+
+    // Data de vigência não pode ser anterior à data de publicação
+    if (effectiveDate < publicationDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'URL do documento inválida',
-        path: ['documentUrl'],
+        message: 'Data de vigência não pode ser anterior à data de publicação',
+        path: ['effectiveDate'],
       });
     }
-  }
-  
-  // Validar metadata JSON quando preenchida
-  if (val.metadata && val.metadata.trim() !== '') {
-    try {
-      JSON.parse(val.metadata);
-    } catch {
+
+    // Data de expiração não pode ser anterior à data de vigência
+    if (expirationDate && expirationDate < effectiveDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Metadata deve ser um JSON válido',
-        path: ['metadata'],
+        message: 'Data de expiração não pode ser anterior à data de vigência',
+        path: ['expirationDate'],
       });
     }
-  }
-});
+
+    // Validar status vs data de expiração
+    if (val.status === 'VIGENTE' && expirationDate && expirationDate < new Date()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Legislação não pode estar vigente com data de expiração no passado',
+        path: ['status'],
+      });
+    }
+
+    // Validar URL do documento
+    if (val.documentUrl && val.documentUrl.trim() !== '') {
+      try {
+        new URL(val.documentUrl);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'URL do documento inválida',
+          path: ['documentUrl'],
+        });
+      }
+    }
+
+    // Validar metadata JSON quando preenchida
+    if (val.metadata && val.metadata.trim() !== '') {
+      try {
+        JSON.parse(val.metadata);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Metadata deve ser um JSON válido',
+          path: ['metadata'],
+        });
+      }
+    }
+  });
+
+// Schema para formulário de tipos de processo de licença
+export const licenseProcessTypeFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, 'Nome é obrigatório')
+      .transform((s) => s.trim()),
+    description: z.string().optional().default(''),
+    code: z
+      .string()
+      .min(1, 'Código é obrigatório')
+      .transform((s) => s.trim().toUpperCase()),
+    licenseTypeId: z.string().min(1, 'Tipo de licença é obrigatório'),
+    processType: z.enum(['INICIAL', 'RENOVACAO', 'ALTERACAO', 'CANCELAMENTO', 'TRANSFERENCIA'], {
+      errorMap: () => ({ message: 'Tipo de processo inválido' }),
+    }),
+    requiredDocuments: z.array(z.string()).optional().default([]),
+    estimatedDays: z.coerce.number().int().min(1, 'Prazo estimado deve ser maior que 0').optional(),
+    fee: z.coerce.number().min(0, 'Taxa não pode ser negativa').optional(),
+    active: z.boolean().default(true),
+    sortOrder: z.coerce.number().int().min(0, 'Ordenação inválida').optional(),
+    metadata: z.string().optional().default(''),
+  })
+  .superRefine((val, ctx) => {
+    // Validar código único (apenas formato)
+    if (!/^[A-Z0-9_]+$/.test(val.code)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Código deve conter apenas letras maiúsculas, números e underscore',
+        path: ['code'],
+      });
+    }
+
+    // Validar metadata JSON quando preenchida
+    if (val.metadata && val.metadata.trim() !== '') {
+      try {
+        JSON.parse(val.metadata);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Metadata deve ser um JSON válido',
+          path: ['metadata'],
+        });
+      }
+    }
+  });
 
 // Tipos TypeScript derivados dos schemas
 export type OptionItem = z.infer<typeof optionItemSchema>;
 export type OptionFormData = z.infer<typeof optionFormSchema>;
 export type LicenceTypeFormData = z.infer<typeof licenceTypeFormSchema>;
 export type LegislationFormData = z.infer<typeof legislationFormSchema>;
+export type LicenseProcessTypeFormData = z.infer<typeof licenseProcessTypeFormSchema>;
 
 // Funções utilitárias de validação
 export const validateOptionItem = (data: unknown): OptionItem => {
@@ -296,6 +364,10 @@ export const validateLicenceTypeForm = (data: unknown): LicenceTypeFormData => {
 
 export const validateLegislationForm = (data: unknown): LegislationFormData => {
   return legislationFormSchema.parse(data);
+};
+
+export const validateLicenseProcessTypeForm = (data: unknown): LicenseProcessTypeFormData => {
+  return licenseProcessTypeFormSchema.parse(data);
 };
 
 // Função para validar metadata JSON
@@ -325,7 +397,7 @@ export const serializeMetadata = (
 
 // Função para transformar dados do formulário de legislação para API
 export const transformLegislationFormData = (
-  formData: LegislationFormData
+  formData: LegislationFormData,
 ): Record<string, unknown> => {
   return {
     title: formData.title.trim(),
@@ -374,3 +446,31 @@ export const COMMON_LEGISLATION_TYPES = [
   'DESPACHO',
   'REGULAMENTO',
 ] as const;
+
+// Constantes de validação para tipos de processo de licença
+export const PROCESS_TYPE_OPTIONS = [
+  { value: 'INICIAL', label: 'Inicial' },
+  { value: 'RENOVACAO', label: 'Renovação' },
+  { value: 'ALTERACAO', label: 'Alteração' },
+  { value: 'CANCELAMENTO', label: 'Cancelamento' },
+  { value: 'TRANSFERENCIA', label: 'Transferência' },
+] as const;
+
+// Função para transformar dados do formulário de tipo de processo para API
+export const transformLicenseProcessTypeFormData = (
+  formData: LicenseProcessTypeFormData,
+): Record<string, unknown> => {
+  return {
+    name: formData.name.trim(),
+    description: formData.description || '',
+    code: formData.code.trim().toUpperCase(),
+    licenseTypeId: formData.licenseTypeId,
+    processType: formData.processType,
+    requiredDocuments: formData.requiredDocuments || [],
+    estimatedDays: formData.estimatedDays || null,
+    fee: formData.fee || null,
+    active: formData.active,
+    sortOrder: formData.sortOrder || null,
+    metadata: formData.metadata ? parseMetadata(formData.metadata) : null,
+  };
+};

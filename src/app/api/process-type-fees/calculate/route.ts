@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/app/(myapp)/lib/api-client';
 import {
-  ProcessTypeFeeCalculationRequestDTO,
-  ProcessTypeFeeCalculationResponseDTO,
+  FeeCalculationRequestDTO,
+  FeeCalculationResult,
 } from '@/app/(myapp)/types/process-type-fees.types';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: ProcessTypeFeeCalculationRequestDTO = await request.json();
+    const body: FeeCalculationRequestDTO = await request.json();
 
-    if (!body.licenseProcessTypeId || body.baseValue === undefined) {
+    if (!body.processTypeId || body.baseValue === undefined) {
       return NextResponse.json(
-        { error: 'Missing required fields: licenseProcessTypeId, baseValue' },
+        { error: 'Missing required fields: processTypeId, baseValue' },
         { status: 400 },
       );
     }
 
-    const response = await apiClient.post<ProcessTypeFeeCalculationResponseDTO>('/process-type-fees/calculate', body);
+    const response = await apiClient.post<FeeCalculationResult>(
+      '/process-type-fees/calculate',
+      body,
+    );
 
     return NextResponse.json(response);
   } catch (error) {

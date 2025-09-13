@@ -68,3 +68,24 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ message: 'Failed to update sector' }, { status: 500 });
   }
 }
+
+// DELETE /api/sectors/[id]
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Sector ID is required' }, { status: 400 });
+    }
+
+    await apiClient.delete(`/sectors/${id}`);
+
+    return NextResponse.json({ message: 'Sector deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting sector:', error);
+    return NextResponse.json({ error: 'Failed to delete sector' }, { status: 500 });
+  }
+}

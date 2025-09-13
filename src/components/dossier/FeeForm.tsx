@@ -4,8 +4,10 @@ import {
   IGRPForm,
   IGRPSelect,
   IGRPInputNumber,
+  IGRPInputText,
   IGRPTextarea,
   IGRPSwitch,
+  IGRPDatePicker,
 } from '@igrp/igrp-framework-react-design-system';
 
 type Option = { value: string; label: string };
@@ -15,6 +17,8 @@ type Props = {
   editingInitial: any;
   editingIndex: number;
   feeTypeOptions: Option[];
+  feeCategoryOptions: Option[];
+  licenseProcessTypeOptions: Option[];
   savingFee: boolean;
   onSubmit: (values: any) => void | Promise<void>;
   onCancel: () => void;
@@ -25,6 +29,8 @@ export default function FeeForm({
   editingInitial,
   editingIndex,
   feeTypeOptions,
+  feeCategoryOptions,
+  licenseProcessTypeOptions,
   savingFee,
   onSubmit,
   onCancel,
@@ -41,6 +47,22 @@ export default function FeeForm({
         key={`fee-${editingInitial?.id || 'new'}`}
         formRef={formRef}
       >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <IGRPSelect
+            name="licenseProcessTypeId"
+            label="Tipo de Processo de Licença"
+            placeholder="Selecione..."
+            options={licenseProcessTypeOptions}
+            required
+          />
+          <IGRPSelect
+            name="feeCategoryId"
+            label="Categoria da Taxa"
+            placeholder="Selecione..."
+            options={feeCategoryOptions}
+            required
+          />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <IGRPSelect
             name="feeType"
@@ -49,12 +71,51 @@ export default function FeeForm({
             options={feeTypeOptions}
             required
           />
-          <IGRPInputNumber name="amount" label="Valor" placeholder="0" required />
+          <IGRPInputNumber name="baseAmount" label="Valor Base" placeholder="0" required />
+          <IGRPInputText name="currencyCode" label="Código da Moeda" placeholder="EUR" required />
         </div>
-        <IGRPTextarea name="notes" label="Notas" placeholder="Observações adicionais" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <IGRPInputNumber name="minimumAmount" label="Valor Mínimo" placeholder="0" />
+          <IGRPInputNumber name="maximumAmount" label="Valor Máximo" placeholder="0" />
+          <IGRPInputNumber
+            name="paymentTermDays"
+            label="Prazo de Pagamento (dias)"
+            placeholder="30"
+            required
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <IGRPDatePicker id="validFrom" name="validFrom" label="Válido Desde" required />
+          <IGRPDatePicker id="validUntil" name="validUntil" label="Válido Até" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <IGRPInputNumber name="taxRate" label="Taxa de Imposto (%)" placeholder="0" />
+          <IGRPInputNumber name="discountRate" label="Taxa de Desconto (%)" placeholder="0" />
+        </div>
+        <IGRPTextarea
+          name="calculationFormula"
+          label="Fórmula de Cálculo"
+          placeholder="Fórmula para cálculo automático"
+        />
+        <IGRPTextarea
+          name="refundConditions"
+          label="Condições de Reembolso"
+          placeholder="Condições para reembolso"
+        />
+        <IGRPTextarea
+          name="exemptionCriteria"
+          label="Critérios de Isenção"
+          placeholder="Critérios para isenção da taxa"
+        />
+        <IGRPInputNumber name="priority" label="Prioridade" placeholder="1" required />
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <IGRPSwitch name="active" checked={editingInitial?.active ?? true} label="Ativo" />
+            <IGRPSwitch
+              name="isRefundable"
+              checked={editingInitial?.isRefundable ?? false}
+              label="Reembolsável"
+            />
           </div>
           <div className="flex items-center gap-2">
             <button

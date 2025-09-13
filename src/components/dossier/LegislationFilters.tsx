@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  IGRPInputText,
-  IGRPSelect,
-  IGRPButton,
-} from '@igrp/igrp-framework-react-design-system';
+import { IGRPInputText, IGRPSelect, IGRPButton } from '@igrp/igrp-framework-react-design-system';
 
 type Option = { value: string; label: string };
 
@@ -49,7 +45,7 @@ export default function LegislationFilters({
           placeholder="Digite o título da legislação"
         />
       </div>
-      
+
       <div>
         <IGRPSelect
           name="type"
@@ -60,7 +56,7 @@ export default function LegislationFilters({
           placeholder="Selecione o tipo"
         />
       </div>
-      
+
       <div>
         <IGRPSelect
           name="status"
@@ -71,7 +67,7 @@ export default function LegislationFilters({
           placeholder="Selecione o status"
         />
       </div>
-      
+
       <div>
         <IGRPInputText
           name="startDate"
@@ -81,7 +77,7 @@ export default function LegislationFilters({
           placeholder="DD/MM/AAAA"
         />
       </div>
-      
+
       <div>
         <IGRPInputText
           name="endDate"
@@ -91,13 +87,9 @@ export default function LegislationFilters({
           placeholder="DD/MM/AAAA"
         />
       </div>
-      
+
       <div className="md:col-span-6 flex justify-end">
-        <IGRPButton
-          type="button"
-          variant="default"
-          onClick={onNew}
-        >
+        <IGRPButton type="button" variant="default" onClick={onNew}>
           Nova Legislação
         </IGRPButton>
       </div>

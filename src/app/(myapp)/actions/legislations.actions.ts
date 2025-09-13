@@ -126,15 +126,17 @@ export const useLegislationsActions = (id?: string) => {
 
       try {
         const searchParams = new URLSearchParams();
-        if (params?.pageNumber !== undefined) searchParams.set('pageNumber', params.pageNumber.toString());
-        if (params?.pageSize !== undefined) searchParams.set('pageSize', params.pageSize.toString());
+        if (params?.pageNumber !== undefined)
+          searchParams.set('pageNumber', params.pageNumber.toString());
+        if (params?.pageSize !== undefined)
+          searchParams.set('pageSize', params.pageSize.toString());
         if (params?.active !== undefined) searchParams.set('active', params.active.toString());
         if (params?.title) searchParams.set('title', params.title);
         if (params?.legislationType) searchParams.set('legislationType', params.legislationType);
         if (params?.status) searchParams.set('status', params.status);
 
         const response = await fetch(`/api/legislations?${searchParams.toString()}`);
-        
+
         if (!response.ok) {
           throw new Error(`Erro ao carregar legislações: ${response.status}`);
         }
@@ -181,7 +183,7 @@ export const useLegislationsActions = (id?: string) => {
 
       try {
         const response = await fetch(`/api/legislations/${legislationId}`);
-        
+
         if (!response.ok) {
           throw new Error(`Erro ao carregar legislação: ${response.status}`);
         }
@@ -231,31 +233,31 @@ export const useLegislationsActions = (id?: string) => {
   // Função para validar dados do formulário
   const validateFormData = (values: unknown): LegislationFormData => {
     const data = values as LegislationFormData;
-    
+
     if (!data.title?.trim()) {
       throw new Error('Título é obrigatório');
     }
-    
+
     if (!data.legislationType?.trim()) {
       throw new Error('Tipo de legislação é obrigatório');
     }
-    
+
     if (!data.publicationDate) {
       throw new Error('Data de publicação é obrigatória');
     }
-    
+
     if (!data.effectiveDate) {
       throw new Error('Data de vigência é obrigatória');
     }
-    
+
     if (!data.documentNumber?.trim()) {
       throw new Error('Número do documento é obrigatório');
     }
-    
+
     if (!data.issuingAuthority?.trim()) {
       throw new Error('Autoridade emissora é obrigatória');
     }
-    
+
     if (!data.scope?.trim()) {
       throw new Error('Âmbito é obrigatório');
     }
@@ -338,7 +340,9 @@ export const useLegislationsActions = (id?: string) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Erro ao alterar status da legislação: ${response.status}`);
+      throw new Error(
+        errorData.error || `Erro ao alterar status da legislação: ${response.status}`,
+      );
     }
 
     const result = await response.json();
@@ -474,7 +478,8 @@ export const legislationsActions = {
     status?: string;
   }) {
     const searchParams = new URLSearchParams();
-    if (params?.pageNumber !== undefined) searchParams.set('pageNumber', params.pageNumber.toString());
+    if (params?.pageNumber !== undefined)
+      searchParams.set('pageNumber', params.pageNumber.toString());
     if (params?.pageSize !== undefined) searchParams.set('pageSize', params.pageSize.toString());
     if (params?.active !== undefined) searchParams.set('active', params.active.toString());
     if (params?.title) searchParams.set('title', params.title);
@@ -482,7 +487,7 @@ export const legislationsActions = {
     if (params?.status) searchParams.set('status', params.status);
 
     const response = await fetch(`/api/legislations?${searchParams.toString()}`);
-    
+
     if (!response.ok) {
       throw new Error(`Erro ao carregar legislações: ${response.status}`);
     }
@@ -492,7 +497,7 @@ export const legislationsActions = {
 
   async loadLegislationById(id: string) {
     const response = await fetch(`/api/legislations/${id}`);
-    
+
     if (!response.ok) {
       throw new Error(`Erro ao carregar legislação: ${response.status}`);
     }
@@ -558,7 +563,9 @@ export const legislationsActions = {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || `Erro ao alterar status da legislação: ${response.status}`);
+      throw new Error(
+        errorData.error || `Erro ao alterar status da legislação: ${response.status}`,
+      );
     }
 
     return response.json();

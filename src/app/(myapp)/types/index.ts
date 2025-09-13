@@ -9,3 +9,4 @@ export * from './legislations.types';
 export * from './process-type-fees.types';
 export * from './fee-categories.types';
 export * from './license-process-types.types';
+export * from './documents.types';

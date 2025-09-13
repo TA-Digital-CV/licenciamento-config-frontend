@@ -29,7 +29,6 @@ import ProcessTypeList from '@/components/dossier/ProcessTypeList';
 import ProcessTypeForm from '@/components/dossier/ProcessTypeForm';
 import FeeList from '@/components/dossier/FeeList';
 import FeeForm from '@/components/dossier/FeeForm';
-import { LegislationRequestDTO } from '@/app/(myapp)/types/legislations.types';
 
 const TABS = [
   { id: 'general', label: 'Dados Gerais' },
@@ -52,7 +51,7 @@ const generalSchema = z.object({
 
 const legislationSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, 'Nome é obrigatório'),
+  title: z.string().min(1, 'Título é obrigatório'),
   legislationType: z.string().min(1, 'Tipo é obrigatório'),
   publicationDate: z.string().min(1, 'Data de publicação é obrigatória'),
   republicBulletin: z.string().optional(),
@@ -150,8 +149,10 @@ export default function PageDossierLicenceTypeComponent({
 
   const filteredLegislations = legislations.filter((l) => {
     const nameMatch = !legSearch || (l?.name || '').toLowerCase().includes(legSearch.toLowerCase());
-    const typeMatch = !legTypeFilter || legTypeFilter === 'all' || l?.legislationType === legTypeFilter;
-    const statusMatch = !legStatusFilter || legStatusFilter === 'all' || (l?.status || '') === legStatusFilter;
+    const typeMatch =
+      !legTypeFilter || legTypeFilter === 'all' || l?.legislationType === legTypeFilter;
+    const statusMatch =
+      !legStatusFilter || legStatusFilter === 'all' || (l?.status || '') === legStatusFilter;
     const date = l?.publicationDate || '';
     const startOk = !legStartDate || (date && date >= legStartDate);
     const endOk = !legEndDate || (date && date <= legEndDate);
@@ -180,7 +181,7 @@ export default function PageDossierLicenceTypeComponent({
         const data = await res.json();
         if (mounted) {
           setLicenceType(data);
-          
+
           // Carregar nome da categoria se categoryId existir
           if (data.categoryId) {
             try {
@@ -193,7 +194,7 @@ export default function PageDossierLicenceTypeComponent({
               console.error('Erro ao carregar categoria:', error);
             }
           }
-          
+
           const general = data?.metadata?.dossier?.general || {};
           setInitialGeneral({
             licensingModel: general.licensingModel || '',
@@ -217,7 +218,6 @@ export default function PageDossierLicenceTypeComponent({
           setProcessTypes(procs);
           const fs = Array.isArray(data?.metadata?.dossier?.fees) ? data.metadata.dossier.fees : [];
           setFees(fs);
-
         }
       } catch (e: any) {
         console.error(e);
@@ -235,8 +235,6 @@ export default function PageDossierLicenceTypeComponent({
       mounted = false;
     };
   }, [id]);
-
-
 
   useEffect(() => {
     const controller = new AbortController();
@@ -289,8 +287,6 @@ export default function PageDossierLicenceTypeComponent({
     loadOptions();
     return () => controller.abort();
   }, []);
-
-
 
   const handleSaveGeneral = async (values: any) => {
     setSubmittingGeneral(true);
@@ -353,7 +349,7 @@ export default function PageDossierLicenceTypeComponent({
     try {
       const item = {
         id: values.id || undefined,
-        name: values.name,
+        title: values.title,
         legislationType: values.legislationType,
         publicationDate: values.publicationDate,
         republicBulletin: values.republicBulletin || '',
@@ -817,297 +813,304 @@ export default function PageDossierLicenceTypeComponent({
 
           <div className="space-y-4">
             <div className="mt-4">
-                {/* Tabs */}
-                <div role="tablist" aria-label="Dossier - Tabs" className="border-b">
-                  <div className="flex items-center gap-1">
-                    {TABS.map((tab) => (
-                      <button
-                        key={tab.id}
-                        role="tab"
-                        aria-selected={activeTab === tab.id}
-                        aria-controls={`panel-${tab.id}`}
-                        id={`tab-${tab.id}`}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`px-3 py-2 text-sm border-b-2 -mb-px ${activeTab === tab.id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                        type="button"
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Panels */}
-                <div className="mt-4">
-                  {/* Dados Gerais */}
-                  <section
-                    id="panel-general"
-                    role="tabpanel"
-                    aria-labelledby="tab-general"
-                    hidden={activeTab !== 'general'}
-                  >
-                    <GeneralForm
-                      id={id}
-                      defaultValues={initialGeneral}
-                      licenceTypeDefaults={{
-                        model: licenceType?.metadata?.dossier?.general?.model,
-                        validityPeriod: licenceType?.metadata?.dossier?.general?.validityPeriod,
-                        validityUnit: licenceType?.metadata?.dossier?.general?.validityUnit,
-                      }}
-                      submitting={submittingGeneral}
-                      onSubmit={handleSaveGeneral}
-                      formRef={formRef}
-                    />
-                  </section>
-
-                  {/* Legislações */}
-                  <section
-                    id="panel-legislation"
-                    role="tabpanel"
-                    aria-labelledby="tab-legislation"
-                    hidden={activeTab !== 'legislation'}
-                  >
-                    <div className="rounded-lg border border-border bg-card p-4">
-                      <h3 className="text-base font-semibold mb-2">Legislações</h3>
-                      <div className="mb-3 text-sm text-muted-foreground">
-                        Gestão de legislações associadas a este tipo de licença.
-                      </div>
-
-                      {/* Filtros */}
-                      <LegislationFilters
-                        legSearch={legSearch}
-                        setLegSearch={setLegSearch}
-                        legTypeFilter={legTypeFilter}
-                        setLegTypeFilter={setLegTypeFilter}
-                        legStatusFilter={legStatusFilter}
-                        setLegStatusFilter={setLegStatusFilter}
-                        legStartDate={legStartDate}
-                        setLegStartDate={setLegStartDate}
-                        legEndDate={legEndDate}
-                        setLegEndDate={setLegEndDate}
-                        legislationTypeOptions={legislationTypeOptions}
-                        legislationStatusOptions={legislationStatusOptions}
-                        onNew={() => {
-                          setEditingIndex(-1);
-                          setEditingInitial({
-                            name: '',
-                            legislationType: '',
-                            publicationDate: '',
-                            republicBulletin: '',
-                            description: '',
-                            documentUrl: '',
-                            status: 'ACTIVE',
-                          });
-                        }}
-                      />
-
-                      {/* Lista */}
-                      <LegislationList
-                        legislations={filteredLegislations}
-                        legislationTypeOptions={legislationTypeOptions}
-                        legislationStatusOptions={legislationStatusOptions}
-                        onEdit={(legislation) => {
-                          const index = legislations.findIndex(l => l.id === legislation.id);
-                          setEditingIndex(index);
-                          setEditingInitial({ ...legislation });
-                        }}
-                        onDelete={(legislation) => handleDeleteLegislation(Number(legislation.id))}
-                      />
-
-                      {/* Formulário de criação/edição */}
-                      {editingInitial && (
-                        <LegislationForm
-                          id={id}
-                          legislationSchema={legislationSchema}
-                          editingInitial={editingInitial}
-                          editingIndex={editingIndex}
-                          legislationTypeOptions={legislationTypeOptions}
-                          legislationStatusOptions={legislationStatusOptions}
-                          savingLegislation={savingLegislation}
-                          onSubmit={(values: LegislationRequestDTO) => handleSaveLegislation(values as unknown as z.infer<typeof legislationSchema>)}
-                          onCancel={() => {
-                            setEditingIndex(-1);
-                            setEditingInitial(null);
-                          }}
-                        />
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Entidades */}
-                  <section
-                    id="panel-entities"
-                    role="tabpanel"
-                    aria-labelledby="tab-entities"
-                    hidden={activeTab !== 'entities'}
-                  >
-                    <div className="rounded-lg border border-border bg-card p-4">
-                      <h3 className="text-base font-semibold mb-2">Entidades</h3>
-                      <div className="mb-3 text-sm text-muted-foreground">
-                        Gestão de entidades relacionadas a este tipo de licença.
-                      </div>
-
-                      <div className="mb-3">
-                        <button
-                          type="button"
-                          className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
-                          onClick={() => {
-                            setEntityEditingIndex(-1);
-                            setEntityEditingInitial({
-                              entityType: '',
-                              name: '',
-                              notes: '',
-                              active: true,
-                            });
-                          }}
-                        >
-                          + Nova Entidade
-                        </button>
-                      </div>
-
-                      {/* Lista de Entidades */}
-                      <EntityList
-                        entities={entities}
-                        entityTypeOptions={entityTypeOptions}
-                        onEdit={(idx: number) => {
-                          setEntityEditingIndex(idx);
-                          setEntityEditingInitial({ ...entities[idx] });
-                        }}
-                        onDelete={handleDeleteEntity}
-                      />
-
-                      {/* Formulário de criação/edição */}
-                      {entityEditingInitial && (
-                        <EntityForm
-                          entitySchema={entitySchema}
-                          editingInitial={entityEditingInitial}
-                          editingIndex={entityEditingIndex}
-                          entityTypeOptions={entityTypeOptions}
-                          savingEntity={savingEntity}
-                          onSubmit={handleSaveEntity}
-                          onCancel={() => {
-                            setEntityEditingIndex(-1);
-                            setEntityEditingInitial(null);
-                          }}
-                        />
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Associação Tipos de Processo */}
-                  <section
-                    id="panel-process-types"
-                    role="tabpanel"
-                    aria-labelledby="tab-process-types"
-                    hidden={activeTab !== 'process-types'}
-                  >
-                    <div className="rounded-lg border border-border bg-card p-4">
-                      <h3 className="text-base font-semibold mb-2">
-                        Associação de Tipos de Processo
-                      </h3>
-                      <div className="mb-3 text-sm text-muted-foreground">
-                        Associe tipos de processo a este tipo de licença.
-                      </div>
-
-                      <div className="mb-3">
-                        <button
-                          type="button"
-                          className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
-                          onClick={() => {
-                            setProcessEditingIndex(-1);
-                            setProcessEditingInitial({ processType: '', notes: '', active: true });
-                          }}
-                        >
-                          + Associar Tipo de Processo
-                        </button>
-                      </div>
-
-                      <ProcessTypeList
-                        processTypes={processTypes}
-                        processTypeOptions={processTypeOptions}
-                        onEdit={(idx) => {
-                          setProcessEditingIndex(idx);
-                          setProcessEditingInitial({ ...processTypes[idx] });
-                        }}
-                        onDelete={handleDeleteProcessType}
-                      />
-
-                      {processEditingInitial && (
-                        <ProcessTypeForm
-                          processAssocSchema={processAssocSchema}
-                          editingInitial={processEditingInitial}
-                          editingIndex={processEditingIndex}
-                          processTypeOptions={processTypeOptions}
-                          savingProcess={savingProcess}
-                          onSubmit={handleSaveProcessType}
-                          onCancel={() => {
-                            setProcessEditingIndex(-1);
-                            setProcessEditingInitial(null);
-                          }}
-                        />
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Taxas */}
-                  <section
-                    id="panel-fees"
-                    role="tabpanel"
-                    aria-labelledby="tab-fees"
-                    hidden={activeTab !== 'fees'}
-                  >
-                    <div className="rounded-lg border border-border bg-card p-4">
-                      <h3 className="text-base font-semibold mb-2">Taxas</h3>
-                      <div className="mb-3 text-sm text-muted-foreground">
-                        Configuração de taxas por tipo de processo.
-                      </div>
-
-                      <div className="mb-3">
-                        <button
-                          type="button"
-                          className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
-                          onClick={() => {
-                            setFeeEditingIndex(-1);
-                            setFeeEditingInitial({
-                              feeType: '',
-                              amount: 0,
-                              notes: '',
-                              active: true,
-                            });
-                          }}
-                        >
-                          + Nova Taxa
-                        </button>
-                      </div>
-
-                      <FeeList
-                        fees={fees}
-                        feeTypeOptions={feeTypeOptions}
-                        onEdit={(idx) => {
-                          setFeeEditingIndex(idx);
-                          setFeeEditingInitial({ ...fees[idx] });
-                        }}
-                        onDelete={handleDeleteFee}
-                      />
-
-                      {feeEditingInitial && (
-                        <FeeForm
-                          feeSchema={feeSchema}
-                          editingInitial={feeEditingInitial}
-                          editingIndex={feeEditingIndex}
-                          feeTypeOptions={feeTypeOptions}
-                          savingFee={savingFee}
-                          onSubmit={handleSaveFee}
-                          onCancel={() => {
-                            setFeeEditingIndex(-1);
-                            setFeeEditingInitial(null);
-                          }}
-                        />
-                      )}
-                    </div>
-                  </section>
+              {/* Tabs */}
+              <div role="tablist" aria-label="Dossier - Tabs" className="border-b">
+                <div className="flex items-center gap-1">
+                  {TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      role="tab"
+                      aria-selected={activeTab === tab.id}
+                      aria-controls={`panel-${tab.id}`}
+                      id={`tab-${tab.id}`}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-3 py-2 text-sm border-b-2 -mb-px ${activeTab === tab.id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
               </div>
+
+              {/* Panels */}
+              <div className="mt-4">
+                {/* Dados Gerais */}
+                <section
+                  id="panel-general"
+                  role="tabpanel"
+                  aria-labelledby="tab-general"
+                  hidden={activeTab !== 'general'}
+                >
+                  <GeneralForm
+                    id={id}
+                    defaultValues={initialGeneral}
+                    licenceTypeDefaults={{
+                      model: licenceType?.metadata?.dossier?.general?.model,
+                      validityPeriod: licenceType?.metadata?.dossier?.general?.validityPeriod,
+                      validityUnit: licenceType?.metadata?.dossier?.general?.validityUnit,
+                    }}
+                    submitting={submittingGeneral}
+                    onSubmit={handleSaveGeneral}
+                    formRef={formRef}
+                  />
+                </section>
+
+                {/* Legislações */}
+                <section
+                  id="panel-legislation"
+                  role="tabpanel"
+                  aria-labelledby="tab-legislation"
+                  hidden={activeTab !== 'legislation'}
+                >
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <h3 className="text-base font-semibold mb-2">Legislações</h3>
+                    <div className="mb-3 text-sm text-muted-foreground">
+                      Gestão de legislações associadas a este tipo de licença.
+                    </div>
+
+                    {/* Filtros */}
+                    <LegislationFilters
+                      legSearch={legSearch}
+                      setLegSearch={setLegSearch}
+                      legTypeFilter={legTypeFilter}
+                      setLegTypeFilter={setLegTypeFilter}
+                      legStatusFilter={legStatusFilter}
+                      setLegStatusFilter={setLegStatusFilter}
+                      legStartDate={legStartDate}
+                      setLegStartDate={setLegStartDate}
+                      legEndDate={legEndDate}
+                      setLegEndDate={setLegEndDate}
+                      legislationTypeOptions={legislationTypeOptions}
+                      legislationStatusOptions={legislationStatusOptions}
+                      onNew={() => {
+                        setEditingIndex(-1);
+                        setEditingInitial({
+                          name: '',
+                          legislationType: '',
+                          publicationDate: '',
+                          republicBulletin: '',
+                          description: '',
+                          documentUrl: '',
+                          status: 'ACTIVE',
+                        });
+                      }}
+                    />
+
+                    {/* Lista */}
+                    <LegislationList
+                      legislations={filteredLegislations}
+                      legislationTypeOptions={legislationTypeOptions}
+                      legislationStatusOptions={legislationStatusOptions}
+                      onEdit={(legislation) => {
+                        const index = legislations.findIndex((l) => l.id === legislation.id);
+                        setEditingIndex(index);
+                        setEditingInitial({ ...legislation });
+                      }}
+                      onDelete={(legislation) => handleDeleteLegislation(Number(legislation.id))}
+                    />
+
+                    {/* Formulário de criação/edição */}
+                    {editingInitial && (
+                      <LegislationForm
+                        id={id}
+                        legislationSchema={legislationSchema}
+                        editingInitial={editingInitial}
+                        editingIndex={editingIndex}
+                        legislationTypeOptions={legislationTypeOptions}
+                        legislationStatusOptions={legislationStatusOptions}
+                        savingLegislation={savingLegislation}
+                        onSubmit={(values: z.infer<typeof legislationSchema>) =>
+                          handleSaveLegislation(values)
+                        }
+                        onCancel={() => {
+                          setEditingIndex(-1);
+                          setEditingInitial(null);
+                        }}
+                      />
+                    )}
+                  </div>
+                </section>
+
+                {/* Entidades */}
+                <section
+                  id="panel-entities"
+                  role="tabpanel"
+                  aria-labelledby="tab-entities"
+                  hidden={activeTab !== 'entities'}
+                >
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <h3 className="text-base font-semibold mb-2">Entidades</h3>
+                    <div className="mb-3 text-sm text-muted-foreground">
+                      Gestão de entidades relacionadas a este tipo de licença.
+                    </div>
+
+                    <div className="mb-3">
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
+                        onClick={() => {
+                          setEntityEditingIndex(-1);
+                          setEntityEditingInitial({
+                            entityType: '',
+                            name: '',
+                            notes: '',
+                            active: true,
+                          });
+                        }}
+                      >
+                        + Nova Entidade
+                      </button>
+                    </div>
+
+                    {/* Lista de Entidades */}
+                    <EntityList
+                      entities={entities}
+                      entityTypeOptions={entityTypeOptions}
+                      onEdit={(idx: number) => {
+                        setEntityEditingIndex(idx);
+                        setEntityEditingInitial({ ...entities[idx] });
+                      }}
+                      onDelete={handleDeleteEntity}
+                    />
+
+                    {/* Formulário de criação/edição */}
+                    {entityEditingInitial && (
+                      <EntityForm
+                        entitySchema={entitySchema}
+                        editingInitial={entityEditingInitial}
+                        editingIndex={entityEditingIndex}
+                        entityTypeOptions={entityTypeOptions}
+                        savingEntity={savingEntity}
+                        onSubmit={handleSaveEntity}
+                        onCancel={() => {
+                          setEntityEditingIndex(-1);
+                          setEntityEditingInitial(null);
+                        }}
+                      />
+                    )}
+                  </div>
+                </section>
+
+                {/* Associação Tipos de Processo */}
+                <section
+                  id="panel-process-types"
+                  role="tabpanel"
+                  aria-labelledby="tab-process-types"
+                  hidden={activeTab !== 'process-types'}
+                >
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <h3 className="text-base font-semibold mb-2">
+                      Associação de Tipos de Processo
+                    </h3>
+                    <div className="mb-3 text-sm text-muted-foreground">
+                      Associe tipos de processo a este tipo de licença.
+                    </div>
+
+                    <div className="mb-3">
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
+                        onClick={() => {
+                          setProcessEditingIndex(-1);
+                          setProcessEditingInitial({ processType: '', notes: '', active: true });
+                        }}
+                      >
+                        + Associar Tipo de Processo
+                      </button>
+                    </div>
+
+                    <ProcessTypeList
+                      processTypes={processTypes}
+                      categoryOptions={processTypeOptions}
+                      onEdit={(processType, idx) => {
+                        setProcessEditingIndex(idx);
+                        setProcessEditingInitial({ ...processType });
+                      }}
+                      onRemove={handleDeleteProcessType}
+                    />
+
+                    {processEditingInitial && (
+                      <ProcessTypeForm
+                        processAssocSchema={processAssocSchema}
+                        editingInitial={processEditingInitial}
+                        editingIndex={processEditingIndex}
+                        processTypeOptions={processTypeOptions}
+                        categoryOptions={processTypeOptions}
+                        savingProcess={savingProcess}
+                        onSubmit={handleSaveProcessType}
+                        onCancel={() => {
+                          setProcessEditingIndex(-1);
+                          setProcessEditingInitial(null);
+                        }}
+                      />
+                    )}
+                  </div>
+                </section>
+
+                {/* Taxas */}
+                <section
+                  id="panel-fees"
+                  role="tabpanel"
+                  aria-labelledby="tab-fees"
+                  hidden={activeTab !== 'fees'}
+                >
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <h3 className="text-base font-semibold mb-2">Taxas</h3>
+                    <div className="mb-3 text-sm text-muted-foreground">
+                      Configuração de taxas por tipo de processo.
+                    </div>
+
+                    <div className="mb-3">
+                      <button
+                        type="button"
+                        className="inline-flex items-center rounded border px-3 py-1.5 text-sm hover:bg-accent"
+                        onClick={() => {
+                          setFeeEditingIndex(-1);
+                          setFeeEditingInitial({
+                            feeType: '',
+                            amount: 0,
+                            notes: '',
+                            active: true,
+                          });
+                        }}
+                      >
+                        + Nova Taxa
+                      </button>
+                    </div>
+
+                    <FeeList
+                      fees={fees}
+                      feeTypeOptions={feeTypeOptions}
+                      feeCategoryOptions={feeTypeOptions}
+                      licenseProcessTypeOptions={processTypeOptions}
+                      onEdit={(fee, idx) => {
+                        setFeeEditingIndex(idx);
+                        setFeeEditingInitial({ ...fee });
+                      }}
+                      onRemove={handleDeleteFee}
+                    />
+
+                    {feeEditingInitial && (
+                      <FeeForm
+                        feeSchema={feeSchema}
+                        editingInitial={feeEditingInitial}
+                        editingIndex={feeEditingIndex}
+                        feeTypeOptions={feeTypeOptions}
+                        feeCategoryOptions={feeTypeOptions}
+                        licenseProcessTypeOptions={processTypeOptions}
+                        savingFee={savingFee}
+                        onSubmit={handleSaveFee}
+                        onCancel={() => {
+                          setFeeEditingIndex(-1);
+                          setFeeEditingInitial(null);
+                        }}
+                      />
+                    )}
+                  </div>
+                </section>
+              </div>
+            </div>
           </div>
         </div>
       </div>

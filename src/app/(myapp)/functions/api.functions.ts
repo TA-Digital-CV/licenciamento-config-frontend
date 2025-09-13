@@ -1,10 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { OptionResponseDTO, OptionRequestDTO, WrapperListOptionsDTO } from '../types';
-import { 
-  LegislationResponseDTO, 
-  LegislationRequestDTO, 
-  WrapperListLegislationDTO 
+import {
+  LegislationResponseDTO,
+  LegislationRequestDTO,
+  WrapperListLegislationDTO,
 } from '../types/legislations.types';
+import {
+  LicenseProcessTypeResponseDTO,
+  LicenseProcessTypeRequestDTO,
+  WrapperListLicenseProcessTypeDTO,
+} from '../types/license-process-types.types';
 
 // Tipos para respostas da API
 export interface ApiResponse<T = any> {
@@ -19,13 +24,26 @@ export interface ApiError {
   details?: any;
 }
 
+// Classe ApiError para instanciação
+export class ApiError extends Error {
+  status?: number;
+  details?: any;
+
+  constructor(message: string, status?: number, details?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.details = details;
+  }
+}
+
 // Configuração base para fetch
 const defaultHeaders = {
   'Content-Type': 'application/json',
 };
 
 // Função utilitária para fazer requests HTTP
-const apiRequest = async <T>(
+export const apiRequest = async <T>(
   url: string,
   options: RequestInit = {},
   signal?: AbortSignal,
@@ -191,6 +209,107 @@ export const loadLicenceTypeById = async (id: string, signal?: AbortSignal): Pro
   return apiRequest<any>(url, {}, signal);
 };
 
+// === FUNÇÕES PARA LICENSE PROCESS TYPES ===
+
+/**
+ * Carrega um tipo de processo de licença por ID
+ */
+export const loadLicenseProcessTypeById = async (
+  id: string,
+  signal?: AbortSignal,
+): Promise<LicenseProcessTypeResponseDTO> => {
+  const url = `/api/license-process-types/${encodeURIComponent(id)}`;
+  return apiRequest<LicenseProcessTypeResponseDTO>(url, {}, signal);
+};
+
+/**
+ * Cria um novo tipo de processo de licença
+ */
+export const createLicenseProcessType = async (
+  data: LicenseProcessTypeRequestDTO,
+  signal?: AbortSignal,
+): Promise<LicenseProcessTypeResponseDTO> => {
+  return apiRequest<LicenseProcessTypeResponseDTO>(
+    '/api/license-process-types',
+    {
+      method: 'POST',
+      body: JSON.stringify(data),
+    },
+    signal,
+  );
+};
+
+/**
+ * Atualiza um tipo de processo de licença existente
+ */
+export const updateLicenseProcessType = async (
+  id: string,
+  data: LicenseProcessTypeRequestDTO,
+  signal?: AbortSignal,
+): Promise<LicenseProcessTypeResponseDTO> => {
+  const url = `/api/license-process-types/${encodeURIComponent(id)}`;
+  return apiRequest<LicenseProcessTypeResponseDTO>(
+    url,
+    {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    },
+    signal,
+  );
+};
+
+/**
+ * Remove um tipo de processo de licença
+ */
+export const deleteLicenseProcessType = async (id: string, signal?: AbortSignal): Promise<void> => {
+  const url = `/api/license-process-types/${encodeURIComponent(id)}`;
+  return apiRequest<void>(
+    url,
+    {
+      method: 'DELETE',
+    },
+    signal,
+  );
+};
+
+/**
+ * Ativa um tipo de processo de licença
+ */
+export const activateLicenseProcessType = async (
+  id: string,
+  signal?: AbortSignal,
+): Promise<string> => {
+  const url = `/api/license-process-types/${encodeURIComponent(id)}`;
+  const response = await apiRequest<{ message: string }>(
+    url,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'activate' }),
+    },
+    signal,
+  );
+  return response.message || 'Tipo de processo ativado com sucesso';
+};
+
+/**
+ * Desativa um tipo de processo de licença
+ */
+export const deactivateLicenseProcessType = async (
+  id: string,
+  signal?: AbortSignal,
+): Promise<string> => {
+  const url = `/api/license-process-types/${encodeURIComponent(id)}`;
+  const response = await apiRequest<{ message: string }>(
+    url,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'deactivate' }),
+    },
+    signal,
+  );
+  return response.message || 'Tipo de processo desativado com sucesso';
+};
+
 /**
  * Cria um novo tipo de licença
  */
@@ -345,14 +464,14 @@ export const loadLegislations = async (
   signal?: AbortSignal,
 ): Promise<WrapperListLegislationDTO> => {
   const params = new URLSearchParams();
-  
+
   if (filters.name) params.append('name', filters.name);
   if (filters.legislationType) params.append('legislationType', filters.legislationType);
   if (filters.licenseTypeId) params.append('licenseTypeId', filters.licenseTypeId);
   if (filters.active !== undefined) params.append('active', filters.active.toString());
   if (filters.pageNumber !== undefined) params.append('pageNumber', filters.pageNumber.toString());
   if (filters.pageSize !== undefined) params.append('pageSize', filters.pageSize.toString());
-  
+
   const url = `/api/legislations${params.toString() ? `?${params.toString()}` : ''}`;
   return apiRequest<WrapperListLegislationDTO>(url, {}, signal);
 };
@@ -407,10 +526,7 @@ export const updateLegislation = async (
 /**
  * Remove legislação
  */
-export const deleteLegislation = async (
-  id: string,
-  signal?: AbortSignal,
-): Promise<void> => {
+export const deleteLegislation = async (id: string, signal?: AbortSignal): Promise<void> => {
   const url = `/api/legislations/${encodeURIComponent(id)}`;
   return apiRequest<void>(
     url,

@@ -1,75 +1,103 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import React, { useMemo } from 'react';
+import { IGRPDataTable } from '@igrp/igrp-framework-react-design-system';
+import type { ColumnDef } from '@tanstack/react-table';
 
 type Option = { value: string; label: string };
 
 type Props = {
   processTypes: any[];
-  processTypeOptions: Option[];
-  onEdit: (originalIndex: number) => void;
-  onDelete: (originalIndex: number) => void;
+  categoryOptions: Option[];
+  onEdit: (processType: any, index: number) => void;
+  onRemove: (index: number) => void;
 };
 
 export default function ProcessTypeList({
   processTypes,
-  processTypeOptions,
+  categoryOptions,
   onEdit,
-  onDelete,
+  onRemove,
 }: Props) {
-  const labelFor = (value: string) =>
-    processTypeOptions.find((o) => o.value === value)?.label || value || '';
+  const getOptionLabel = (options: Option[], value: string) => {
+    const option = options.find((opt) => opt.value === value);
+    return option ? option.label : value;
+  };
+
+  const tableData = processTypes.map((processType, index) => ({
+    id: index,
+    processName: processType.processName || '-',
+    processCategory: getOptionLabel(categoryOptions, processType.processCategory),
+    description: processType.description || '-',
+    active: processType.active ? 'Sim' : 'Não',
+    actions: (
+      <div className="flex gap-2">
+        <button
+          onClick={() => onEdit(processType, index)}
+          className="text-blue-600 hover:text-blue-800"
+        >
+          Editar
+        </button>
+        <button onClick={() => onRemove(index)} className="text-red-600 hover:text-red-800">
+          Remover
+        </button>
+      </div>
+    ),
+  }));
+
+  const columns: ColumnDef<any>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'processName',
+        header: 'Nome do Processo',
+        cell: ({ row }) => <div className="font-medium">{row.getValue('processName')}</div>,
+      },
+      {
+        accessorKey: 'processCategory',
+        header: 'Categoria',
+        cell: ({ row }) => <div className="text-sm">{row.getValue('processCategory')}</div>,
+      },
+      {
+        accessorKey: 'description',
+        header: 'Descrição',
+        cell: ({ row }) => (
+          <div className="text-muted-foreground text-sm">{row.getValue('description') || '-'}</div>
+        ),
+      },
+      {
+        accessorKey: 'active',
+        header: 'Ativo',
+        cell: ({ row }) => <div className="text-sm">{row.getValue('active')}</div>,
+      },
+      {
+        id: 'actions',
+        header: 'Ações',
+        cell: ({ row }) => (
+          <div className="flex gap-2">
+            <button
+              onClick={() => onEdit(processTypes[row.original.id], row.original.id)}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => onRemove(row.original.id)}
+              className="text-red-600 hover:text-red-800"
+            >
+              Remover
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onEdit, onRemove, processTypes],
+  );
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-sm">
-        <thead>
-          <tr className="text-left border-b">
-            <th className="py-2 pr-3">Tipo de Processo</th>
-            <th className="py-2 pr-3">Ativo</th>
-            <th className="py-2 pr-3">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {processTypes.length === 0 ? (
-            <tr>
-              <td colSpan={3} className="py-4 text-muted-foreground">
-                Nenhum tipo de processo associado.
-              </td>
-            </tr>
-          ) : (
-            processTypes.map((p, idx) => (
-              <tr key={p.id || idx} className="border-b">
-                <td className="py-2 pr-3">{labelFor(p.processType)}</td>
-                <td className="py-2 pr-3">
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${p.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                  >
-                    {p.active ? 'Ativo' : 'Inativo'}
-                  </span>
-                </td>
-                <td className="py-2 pr-3">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className="text-blue-600 hover:underline"
-                      onClick={() => onEdit(idx)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      className="text-red-600 hover:underline"
-                      onClick={() => onDelete(idx)}
-                    >
-                      Remover
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <IGRPDataTable
+      columns={columns}
+      data={tableData}
+      showPagination={false}
+      notFoundLabel="Nenhum tipo de processo associado."
+    />
   );
 }

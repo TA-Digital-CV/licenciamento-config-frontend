@@ -29,16 +29,46 @@ export const licenseParameterSchema = z.object({
   validityUnit: z.string().min(1, 'Unidade de validade é obrigatória'),
   validityPeriod: z.coerce.number().int().min(1, 'Período de validade deve ser maior que zero'),
   model: z.string().min(1, 'Modelo é obrigatório'),
-  provisionalValidity: z.coerce.number().int().min(0, 'Validade provisória deve ser maior ou igual a zero'),
-  definitiveLicenseValidity: z.coerce.number().int().min(0, 'Validade definitiva deve ser maior ou igual a zero'),
-  provisionalDefaultPeriod: z.coerce.number().int().min(0, 'Período padrão provisório deve ser maior ou igual a zero'),
-  definitiveDefaultPeriod: z.coerce.number().int().min(0, 'Período padrão definitivo deve ser maior ou igual a zero'),
-  provisionalRenewalPeriod: z.coerce.number().int().min(0, 'Período de renovação provisória deve ser maior ou igual a zero'),
-  maxProvisonalRenewal: z.coerce.number().int().min(0, 'Máximo de renovações provisórias deve ser maior ou igual a zero'),
-  definitiveRenewalPeriod: z.coerce.number().int().min(0, 'Período de renovação definitiva deve ser maior ou igual a zero'),
-  definitiveRenewalDefaultPeriod: z.coerce.number().int().min(0, 'Período padrão de renovação definitiva deve ser maior ou igual a zero'),
-  renewalDefaultPeriod: z.coerce.number().int().min(0, 'Período padrão de renovação deve ser maior ou igual a zero'),
-  maxRenewalPeriod: z.coerce.number().int().min(0, 'Período máximo de renovação deve ser maior ou igual a zero'),
+  provisionalValidity: z.coerce
+    .number()
+    .int()
+    .min(0, 'Validade provisória deve ser maior ou igual a zero'),
+  definitiveLicenseValidity: z.coerce
+    .number()
+    .int()
+    .min(0, 'Validade definitiva deve ser maior ou igual a zero'),
+  provisionalDefaultPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período padrão provisório deve ser maior ou igual a zero'),
+  definitiveDefaultPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período padrão definitivo deve ser maior ou igual a zero'),
+  provisionalRenewalPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período de renovação provisória deve ser maior ou igual a zero'),
+  maxProvisonalRenewal: z.coerce
+    .number()
+    .int()
+    .min(0, 'Máximo de renovações provisórias deve ser maior ou igual a zero'),
+  definitiveRenewalPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período de renovação definitiva deve ser maior ou igual a zero'),
+  definitiveRenewalDefaultPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período padrão de renovação definitiva deve ser maior ou igual a zero'),
+  renewalDefaultPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período padrão de renovação deve ser maior ou igual a zero'),
+  maxRenewalPeriod: z.coerce
+    .number()
+    .int()
+    .min(0, 'Período máximo de renovação deve ser maior ou igual a zero'),
   vitalityFlag: z.boolean().default(false),
 });
 
@@ -68,7 +98,8 @@ export default function GeneralForm({
   const [licensingModelOptions, setLicensingModelOptions] = useState<Option[]>([]);
   const [validityUnitOptions, setValidityUnitOptions] = useState<Option[]>([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
-  const [finalDefaultValues, setFinalDefaultValues] = useState<Partial<LicenseParameterRequestDTO>>(defaultValues);
+  const [finalDefaultValues, setFinalDefaultValues] =
+    useState<Partial<LicenseParameterRequestDTO>>(defaultValues);
 
   // Carregar opções das constantes LICENSING_MODEL e VALIDITY_UNIT
   useEffect(() => {
@@ -77,18 +108,20 @@ export default function GeneralForm({
         setIsLoadingOptions(true);
         const response = await fetch('/api/options?codes=LICENSING_MODEL,VALIDITY_UNIT');
         const data = await response.json();
-        
+
         if (data.success) {
-          const licensingModels = data.data.LICENSING_MODEL?.map((item: any) => ({
-            value: item.key,
-            label: item.value
-          })) || [];
-          
-          const validityUnits = data.data.VALIDITY_UNIT?.map((item: any) => ({
-            value: item.key,
-            label: item.value
-          })) || [];
-          
+          const licensingModels =
+            data.data.LICENSING_MODEL?.map((item: any) => ({
+              value: item.key,
+              label: item.value,
+            })) || [];
+
+          const validityUnits =
+            data.data.VALIDITY_UNIT?.map((item: any) => ({
+              value: item.key,
+              label: item.value,
+            })) || [];
+
           setLicensingModelOptions(licensingModels);
           setValidityUnitOptions(validityUnits);
         }
@@ -111,7 +144,7 @@ export default function GeneralForm({
       validityPeriod: defaultValues.validityPeriod || licenceTypeDefaults?.validityPeriod || 0,
       validityUnit: defaultValues.validityUnit || licenceTypeDefaults?.validityUnit || '',
     };
-    
+
     setFinalDefaultValues(mergedDefaults);
   }, [defaultValues, licenceTypeDefaults]);
 
@@ -130,7 +163,8 @@ export default function GeneralForm({
             Parâmetros de Licença
           </h2>
           <p className="text-sm text-muted-foreground">
-            Configure os parâmetros específicos para este tipo de licença de forma organizada e intuitiva.
+            Configure os parâmetros específicos para este tipo de licença de forma organizada e
+            intuitiva.
           </p>
         </div>
 
@@ -152,7 +186,11 @@ export default function GeneralForm({
                 Configuração Básica
                 <IGRPTooltipPrimitive>
                   <IGRPTooltipTriggerPrimitive>
-                    <IGRPIcon name="help-circle" className="h-4 w-4 text-muted-foreground cursor-help" iconName={''} />
+                    <IGRPIcon
+                      name="help-circle"
+                      className="h-4 w-4 text-muted-foreground cursor-help"
+                      iconName={''}
+                    />
                   </IGRPTooltipTriggerPrimitive>
                   <IGRPTooltipContentPrimitive>
                     <p>Configure os parâmetros básicos do tipo de licença</p>
@@ -168,25 +206,25 @@ export default function GeneralForm({
                 <IGRPSelect
                   name="model"
                   label="Modelo de Licenciamento"
-                  placeholder={isLoadingOptions ? "Carregando..." : "Selecione um modelo"}
+                  placeholder={isLoadingOptions ? 'Carregando...' : 'Selecione um modelo'}
                   options={licensingModelOptions}
                   required
                   disabled={isLoadingOptions}
                   className="focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200"
                 />
-                
-                <IGRPInputNumber 
-                  name="validityPeriod" 
+
+                <IGRPInputNumber
+                  name="validityPeriod"
                   label="Período de Validade"
                   placeholder="Ex: 12"
                   required
                   className="focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200"
                 />
-                
+
                 <IGRPSelect
                   name="validityUnit"
                   label="Unidade de Validade"
-                  placeholder={isLoadingOptions ? "Carregando..." : "Selecione a unidade"}
+                  placeholder={isLoadingOptions ? 'Carregando...' : 'Selecione a unidade'}
                   options={validityUnitOptions}
                   required
                   disabled={isLoadingOptions}
@@ -204,7 +242,11 @@ export default function GeneralForm({
                 Configurações de Validade
                 <IGRPTooltipPrimitive>
                   <IGRPTooltipTriggerPrimitive>
-                    <IGRPIcon name="help-circle" className="h-4 w-4 text-muted-foreground cursor-help" iconName={''} />
+                    <IGRPIcon
+                      name="help-circle"
+                      className="h-4 w-4 text-muted-foreground cursor-help"
+                      iconName={''}
+                    />
                   </IGRPTooltipTriggerPrimitive>
                   <IGRPTooltipContentPrimitive>
                     <p>Configure as opções de renovação automática e períodos</p>
@@ -212,32 +254,33 @@ export default function GeneralForm({
                 </IGRPTooltipPrimitive>
               </IGRPCardTitle>
               <IGRPCardDescription>
-                Defina os períodos de validade e configurações padrão para diferentes tipos de licença
+                Defina os períodos de validade e configurações padrão para diferentes tipos de
+                licença
               </IGRPCardDescription>
             </IGRPCardHeader>
             <IGRPCardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                <IGRPInputNumber 
-                  name="provisionalValidity" 
-                  label="Validade Provisória (dias)" 
+                <IGRPInputNumber
+                  name="provisionalValidity"
+                  label="Validade Provisória (dias)"
                   placeholder="Ex: 30"
                 />
-                
-                <IGRPInputNumber 
-                  name="definitiveLicenseValidity" 
-                  label="Validade Definitiva (dias)" 
+
+                <IGRPInputNumber
+                  name="definitiveLicenseValidity"
+                  label="Validade Definitiva (dias)"
                   placeholder="Ex: 365"
                 />
-                
-                <IGRPInputNumber 
-                  name="provisionalDefaultPeriod" 
-                  label="Período Padrão Provisório (dias)" 
+
+                <IGRPInputNumber
+                  name="provisionalDefaultPeriod"
+                  label="Período Padrão Provisório (dias)"
                   placeholder="Ex: 15"
                 />
-                
-                <IGRPInputNumber 
-                  name="definitiveDefaultPeriod" 
-                  label="Período Padrão Definitivo (dias)" 
+
+                <IGRPInputNumber
+                  name="definitiveDefaultPeriod"
+                  label="Período Padrão Definitivo (dias)"
                   placeholder="Ex: 30"
                 />
               </div>
@@ -252,7 +295,11 @@ export default function GeneralForm({
                 Configurações de Renovação
                 <IGRPTooltipPrimitive>
                   <IGRPTooltipTriggerPrimitive>
-                    <IGRPIcon name="help-circle" className="h-4 w-4 text-muted-foreground cursor-help" iconName={''} />
+                    <IGRPIcon
+                      name="help-circle"
+                      className="h-4 w-4 text-muted-foreground cursor-help"
+                      iconName={''}
+                    />
                   </IGRPTooltipTriggerPrimitive>
                   <IGRPTooltipContentPrimitive>
                     <p>Configure os períodos e limites para renovação de licenças</p>
@@ -265,39 +312,39 @@ export default function GeneralForm({
             </IGRPCardHeader>
             <IGRPCardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <IGRPInputNumber 
-                  name="provisionalRenewalPeriod" 
-                  label="Período Renovação Provisória (dias)" 
+                <IGRPInputNumber
+                  name="provisionalRenewalPeriod"
+                  label="Período Renovação Provisória (dias)"
                   placeholder="Ex: 30"
                 />
-                
-                <IGRPInputNumber 
-                  name="maxProvisonalRenewal" 
-                  label="Máximo Renovações Provisórias" 
+
+                <IGRPInputNumber
+                  name="maxProvisonalRenewal"
+                  label="Máximo Renovações Provisórias"
                   placeholder="Ex: 3"
                 />
-                
-                <IGRPInputNumber 
-                  name="definitiveRenewalPeriod" 
-                  label="Período Renovação Definitiva (dias)" 
+
+                <IGRPInputNumber
+                  name="definitiveRenewalPeriod"
+                  label="Período Renovação Definitiva (dias)"
                   placeholder="Ex: 60"
                 />
-                
-                <IGRPInputNumber 
-                  name="definitiveRenewalDefaultPeriod" 
-                  label="Período Padrão Renovação Definitiva (dias)" 
+
+                <IGRPInputNumber
+                  name="definitiveRenewalDefaultPeriod"
+                  label="Período Padrão Renovação Definitiva (dias)"
                   placeholder="Ex: 45"
                 />
-                
-                <IGRPInputNumber 
-                  name="renewalDefaultPeriod" 
-                  label="Período Padrão de Renovação (dias)" 
+
+                <IGRPInputNumber
+                  name="renewalDefaultPeriod"
+                  label="Período Padrão de Renovação (dias)"
                   placeholder="Ex: 30"
                 />
-                
-                <IGRPInputNumber 
-                  name="maxRenewalPeriod" 
-                  label="Período Máximo de Renovação (dias)" 
+
+                <IGRPInputNumber
+                  name="maxRenewalPeriod"
+                  label="Período Máximo de Renovação (dias)"
                   placeholder="Ex: 90"
                 />
               </div>
@@ -320,7 +367,11 @@ export default function GeneralForm({
                 Configurações Adicionais
                 <IGRPTooltipPrimitive>
                   <IGRPTooltipTriggerPrimitive>
-                    <IGRPIcon name="help-circle" className="h-4 w-4 text-muted-foreground cursor-help" iconName={''} />
+                    <IGRPIcon
+                      name="help-circle"
+                      className="h-4 w-4 text-muted-foreground cursor-help"
+                      iconName={''}
+                    />
                   </IGRPTooltipTriggerPrimitive>
                   <IGRPTooltipContentPrimitive>
                     <p>Configure opções especiais e flags do sistema</p>
@@ -333,10 +384,7 @@ export default function GeneralForm({
             </IGRPCardHeader>
             <IGRPCardContent>
               <div className="grid grid-cols-1 gap-4">
-                <IGRPSwitch 
-                  name="vitalityFlag" 
-                  label="Flag de Vitalidade"
-                />
+                <IGRPSwitch name="vitalityFlag" label="Flag de Vitalidade" />
               </div>
             </IGRPCardContent>
           </IGRPCard>
@@ -351,11 +399,15 @@ export default function GeneralForm({
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <IGRPButton 
-                  type="button" 
-                  variant="ghost" 
+                <IGRPButton
+                  type="button"
+                  variant="ghost"
                   onClick={() => {
-                    if (window.confirm('Tem certeza que deseja limpar todos os campos? Esta ação não pode ser desfeita.')) {
+                    if (
+                      window.confirm(
+                        'Tem certeza que deseja limpar todos os campos? Esta ação não pode ser desfeita.',
+                      )
+                    ) {
                       // Reset form logic would go here
                       window.location.reload();
                     }
@@ -366,26 +418,30 @@ export default function GeneralForm({
                   <IGRPIcon name="rotate-ccw" className="h-4 w-4 mr-2" iconName={''} />
                   Limpar Tudo
                 </IGRPButton>
-                
+
                 <div className="flex space-x-4">
-                  <IGRPButton 
-                    type="button" 
-                    variant="outline" 
+                  <IGRPButton
+                    type="button"
+                    variant="outline"
                     onClick={handleReset}
                     disabled={submitting}
                     aria-label="Cancelar alterações"
                   >
                     Cancelar
                   </IGRPButton>
-                  <IGRPButton 
-                    type="submit" 
+                  <IGRPButton
+                    type="submit"
                     disabled={submitting}
                     aria-label={submitting ? 'Salvando parâmetros' : 'Salvar parâmetros da licença'}
                     className="min-w-[140px] transition-all duration-200 hover:shadow-md"
                   >
                     {submitting ? (
                       <>
-                        <IGRPIcon name="loader-2" className="h-4 w-4 mr-2 animate-spin" iconName={''} />
+                        <IGRPIcon
+                          name="loader-2"
+                          className="h-4 w-4 mr-2 animate-spin"
+                          iconName={''}
+                        />
                         Salvando...
                       </>
                     ) : (

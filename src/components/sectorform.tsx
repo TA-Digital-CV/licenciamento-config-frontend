@@ -17,7 +17,10 @@ import {
   useIGRPToast,
 } from '@igrp/igrp-framework-react-design-system';
 import { useRouter } from 'next/navigation';
-import { loadActiveOptionsByCode, transformOptionsToSelectItems } from '@/app/(myapp)/functions/api.functions';
+import {
+  loadActiveOptionsByCode,
+  transformOptionsToSelectItems,
+} from '@/app/(myapp)/functions/api.functions';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -130,7 +133,9 @@ export default function SectorForm({ id }: { id?: string }) {
 
   const actionsDisabled = loading || submitting;
   const isEditing = Boolean(id);
-  const [sectorTypeOptions, setSectorTypeOptions] = useState<{ value: string; label: string }[]>([]);
+  const [sectorTypeOptions, setSectorTypeOptions] = useState<{ value: string; label: string }[]>(
+    [],
+  );
   useEffect(() => {
     let active = true;
     async function loadSectorTypes() {

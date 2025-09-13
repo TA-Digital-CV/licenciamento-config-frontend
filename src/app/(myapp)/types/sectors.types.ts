@@ -1,25 +1,35 @@
-//// Types for Sectors API
+// Types for Sectors API
 
 export interface SectorResponseDTO {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   code: string;
-  sectorType: string;
-  active: boolean;
+  parentId?: string;
+  level: number;
   sortOrder: number;
-  metadata: Record<string, unknown>;
+  contactInfo?: string;
+  address?: string;
+  responsiblePersonId?: string;
+  sectorType?: string;
+  active: boolean;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SectorRequestDTO {
   name: string;
   description?: string;
   code: string;
-  sectorTypeKey: string;
-  active?: boolean;
+  parentId?: string;
   sortOrder?: number;
+  contactInfo?: string;
+  address?: string;
+  responsiblePersonId?: string;
+  sectorTypeKey?: string;
+  active?: boolean;
   metadata?: Record<string, unknown>;
-  [key: string]: unknown;
 }
 
 export interface WrapperListSectorDTO {
@@ -30,4 +40,8 @@ export interface WrapperListSectorDTO {
   last: boolean;
   first: boolean;
   content: SectorResponseDTO[];
+}
+
+export interface SectorCodeCheckDTO {
+  exists: boolean;
 }

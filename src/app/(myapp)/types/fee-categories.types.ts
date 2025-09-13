@@ -5,39 +5,33 @@ export interface FeeCategoryResponseDTO {
   name: string;
   description?: string;
   code: string;
-  categoryType: 'ADMINISTRATIVA' | 'TECNICA' | 'AMBIENTAL' | 'SANITARIA' | 'SEGURANCA' | 'OUTRA';
-  applicableScope: 'GERAL' | 'ESPECIFICA' | 'CONDICIONAL';
-  baseAmount?: number;
-  currencyCode?: string;
-  calculationMethod: 'FIXA' | 'VARIAVEL' | 'PERCENTUAL' | 'FORMULA';
-  isRecurring: boolean;
-  recurringPeriod?: 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL';
-  legalReference?: string;
-  exemptionCriteria?: string;
-  priority: number;
-  parentCategoryId?: string;
-  parentCategoryName?: string;
+  categoryType: string;
+  baseAmount: number;
+  currency: string;
+  calculationMethod: string;
+  isPercentage: boolean;
+  minAmount?: number;
+  maxAmount?: number;
+  applicableToTypes: string[];
   active: boolean;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
-  metadata?: Record<string, unknown>;
 }
 
 export interface FeeCategoryRequestDTO {
   name: string;
   description?: string;
   code: string;
-  categoryType: 'ADMINISTRATIVA' | 'TECNICA' | 'AMBIENTAL' | 'SANITARIA' | 'SEGURANCA' | 'OUTRA';
-  applicableScope: 'GERAL' | 'ESPECIFICA' | 'CONDICIONAL';
-  baseAmount?: number;
-  currencyCode?: string;
-  calculationMethod: 'FIXA' | 'VARIAVEL' | 'PERCENTUAL' | 'FORMULA';
-  isRecurring: boolean;
-  recurringPeriod?: 'MENSAL' | 'TRIMESTRAL' | 'SEMESTRAL' | 'ANUAL';
-  legalReference?: string;
-  exemptionCriteria?: string;
-  priority: number;
-  parentCategoryId?: string;
+  categoryType: string;
+  baseAmount: number;
+  currency?: string;
+  calculationMethod: string;
+  isPercentage?: boolean;
+  minAmount?: number;
+  maxAmount?: number;
+  applicableToTypes?: string[];
+  active?: boolean;
   metadata?: Record<string, unknown>;
 }
 
@@ -50,3 +44,10 @@ export interface WrapperListFeeCategoryDTO {
   first: boolean;
   content: FeeCategoryResponseDTO[];
 }
+
+export interface FeeCategoryCodeCheckDTO {
+  exists: boolean;
+}
+
+// FeeCalculationResult e FeeCalculationRequestDTO são definidos em process-type-fees.types.ts
+// para evitar duplicação de tipos

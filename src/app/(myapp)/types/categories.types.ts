@@ -26,6 +26,12 @@ export interface CategoryRequestDTO {
   [key: string]: unknown;
 }
 
+export interface CategoryMoveRequestDTO {
+  newParentId?: string;
+  newPosition: number;
+  targetSectorId?: string;
+}
+
 export interface WrapperListCategoryDTO {
   pageNumber: number;
   pageSize: number;

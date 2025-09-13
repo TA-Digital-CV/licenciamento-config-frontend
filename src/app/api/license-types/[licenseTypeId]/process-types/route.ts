@@ -6,8 +6,9 @@ import {
   LicenseProcessTypeResponseDTO,
 } from '@/app/(myapp)/types/license-process-types.types';
 
-export async function GET(request: NextRequest, { params }: { params: { licenseTypeId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ licenseTypeId: string }> }) {
   try {
+    const { licenseTypeId } = await params;
     const { searchParams } = new URL(request.url);
     const active = searchParams.get('active') || 'true';
     const processType = searchParams.get('processType');
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: { licenseT
     if (processType) queryParams.append('processType', processType);
 
     const response = await apiClient.get<WrapperListLicenseProcessTypeDTO>(
-      `/license-types/${params.licenseTypeId}/process-types?${queryParams.toString()}`
+      `/license-types/${licenseTypeId}/process-types?${queryParams.toString()}`,
     );
 
     return NextResponse.json(response);
@@ -34,8 +35,12 @@ export async function GET(request: NextRequest, { params }: { params: { licenseT
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { licenseTypeId: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ licenseTypeId: string }> },
+) {
   try {
+    const { licenseTypeId } = await params;
     const body: LicenseProcessTypeRequestDTO = await request.json();
 
     if (!body.processName || !body.processCode) {
@@ -48,12 +53,12 @@ export async function POST(request: NextRequest, { params }: { params: { license
     // Add licenseTypeId from URL params to the body
     const requestBody = {
       ...body,
-      licenseTypeId: params.licenseTypeId,
+      licenseTypeId: licenseTypeId,
     };
 
     const response = await apiClient.post<LicenseProcessTypeResponseDTO>(
-      `/license-types/${params.licenseTypeId}/process-types`,
-      requestBody
+      `/license-types/${licenseTypeId}/process-types`,
+      requestBody,
     );
 
     return NextResponse.json(response, { status: 201 });

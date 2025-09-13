@@ -356,7 +356,7 @@ export const licenseTypesActions = {
     return [
       { value: 'PROVISORIO', label: 'Provisório' },
       { value: 'DEFINITIVO', label: 'Definitivo' },
-      { value: 'HIBRIDO', label: 'Híbrido' }
+      { value: 'HIBRIDO', label: 'Híbrido' },
     ];
   },
 

@@ -48,7 +48,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       content: transformedContent,
-      total: (response as any)?.total ?? (response as any)?.totalElements ?? transformedContent.length,
+      total:
+        (response as any)?.total ?? (response as any)?.totalElements ?? transformedContent.length,
     });
   } catch (error) {
     console.error('Error fetching categories:', error);

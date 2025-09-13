@@ -27,7 +27,9 @@ export async function GET(request: NextRequest) {
     if (code) params.append('code', code);
     if (categoryType) params.append('categoryType', categoryType);
 
-    const response = await apiClient.get<WrapperListFeeCategoryDTO>(`/fee-categories?${params.toString()}`);
+    const response = await apiClient.get<WrapperListFeeCategoryDTO>(
+      `/fee-categories?${params.toString()}`,
+    );
 
     return NextResponse.json(response);
   } catch (error) {

@@ -13,7 +13,10 @@ import {
   IGRPDataTableButtonLink,
 } from '@igrp/igrp-framework-react-design-system';
 import type { ColumnDef } from '@tanstack/react-table';
-import { loadActiveOptionsByCode, transformOptionsToSelectItems } from '@/app/(myapp)/functions/api.functions';
+import {
+  loadActiveOptionsByCode,
+  transformOptionsToSelectItems,
+} from '@/app/(myapp)/functions/api.functions';
 import { Power, PowerOff, GitBranch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -34,7 +37,7 @@ export type Sector = {
 
 // Helpers: estados e mapeamentos
 const STATUS = { ALL: 'all', ACTIVE: 'ACTIVE', INACTIVE: 'INACTIVE' } as const;
-type StatusFilter = typeof STATUS[keyof typeof STATUS];
+type StatusFilter = (typeof STATUS)[keyof typeof STATUS];
 
 function mapStatusFilterToActiveParam(status: string): string | null {
   const up = String(status).toUpperCase();
@@ -198,8 +201,8 @@ export default function Sectorlist({ sectorType }: { sectorType?: string }) {
           statusFilter === STATUS.ALL
             ? true
             : statusFilter === STATUS.ACTIVE
-            ? updated.active === true
-            : updated.active === false; // INACTIVE
+              ? updated.active === true
+              : updated.active === false; // INACTIVE
 
         const effectiveType = resolveEffectiveSectorType(typeFilter, sectorType);
         const includeByType = computeIncludeByType(updated, effectiveType);

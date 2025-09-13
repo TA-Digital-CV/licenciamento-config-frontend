@@ -15,7 +15,10 @@ import {
 } from '@igrp/igrp-framework-react-design-system';
 import type { ColumnDef } from '@tanstack/react-table';
 import { useSearchParams } from 'next/navigation';
-import { loadActiveOptionsByCode, transformOptionsToSelectItems } from '@/app/(myapp)/functions/api.functions';
+import {
+  loadActiveOptionsByCode,
+  transformOptionsToSelectItems,
+} from '@/app/(myapp)/functions/api.functions';
 import { Power, PowerOff } from 'lucide-react';
 
 // Constante para status
@@ -107,22 +110,22 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
     try {
       setLoadingCategories(true);
       setCategoryError(null);
-      
+
       const params = new URLSearchParams();
       params.set('active', 'true');
       if (sectorId) {
         params.set('sectorId', sectorId);
       }
-      
+
       const res = await fetch(`/api/categories?${params.toString()}`, { signal });
       if (!res.ok) {
         throw new Error(`Erro ao carregar categorias: ${res.status}`);
       }
-      
+
       const data = await res.json();
       const opts = (data.content || []).map((c: any) => ({ value: c.id, label: c.name }));
       setCategoryOptions(opts);
-      
+
       const map: Record<string, { sectorId?: string; sectorName?: string }> = {};
       (data.content || []).forEach((c: any) => {
         map[c.id] = { sectorId: c.sectorId, sectorName: c.sectorName };
@@ -164,10 +167,10 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
   // Filtro contextualizado: carregar categorias quando o setor muda
   useEffect(() => {
     const controller = new AbortController();
-    
+
     // Limpar filtro de categoria quando setor muda
     setCategoryFilter('');
-    
+
     // Carregar categorias baseadas no setor selecionado
     if (sectorFilter) {
       loadCategoriesBySector(sectorFilter, controller.signal);
@@ -175,7 +178,7 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
       // Se nenhum setor selecionado, carregar todas as categorias
       loadCategoriesBySector(null, controller.signal);
     }
-    
+
     return () => controller.abort();
   }, [sectorFilter]);
 
@@ -187,7 +190,8 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         setLoading(true);
         setError(null);
         const params = new URLSearchParams();
-        if (statusFilter !== STATUS.ALL) params.set('active', String(String(statusFilter).toUpperCase() === STATUS.ACTIVE));
+        if (statusFilter !== STATUS.ALL)
+          params.set('active', String(String(statusFilter).toUpperCase() === STATUS.ACTIVE));
         if (categoryFilter) params.set('categoryId', categoryFilter);
         const query = params.toString();
         const res = await fetch(`/api/licence-types${query ? `?${query}` : ''}`, {
@@ -220,17 +224,18 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) throw new Error(`Erro ao ${action === 'enable' ? 'ativar' : 'desativar'} tipo de licença`);
-      
+      if (!res.ok)
+        throw new Error(`Erro ao ${action === 'enable' ? 'ativar' : 'desativar'} tipo de licença`);
+
       // Update local state
-      setLicenceTypes(prev => prev.map(item => 
-        item.id === row.id ? { ...item, active: !item.active } : item
-      ));
-      
+      setLicenceTypes((prev) =>
+        prev.map((item) => (item.id === row.id ? { ...item, active: !item.active } : item)),
+      );
+
       igrpToast({
         title: 'Sucesso',
         description: `Tipo de licença ${action === 'enable' ? 'ativado' : 'desativado'} com sucesso`,
-        type: 'default'
+        type: 'default',
       });
     } catch (err: any) {
       const message = err?.message || 'Erro ao alterar estado do tipo de licença';
@@ -266,7 +271,8 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
         header: 'Categoria',
         cell: ({ row }) => {
           const catId = row.original.categoryId as string | undefined;
-          const label = (catId && categoryLabelMap[catId]) || (row.getValue('categoryName') as string) || '-';
+          const label =
+            (catId && categoryLabelMap[catId]) || (row.getValue('categoryName') as string) || '-';
           return <div className="text-sm">{label}</div>;
         },
       },
@@ -441,11 +447,7 @@ export default function LicenceTypelist({ categoryId }: { categoryId?: string })
               </option>
             ))}
           </select>
-          {categoryError && (
-            <div className="text-xs text-red-600 mt-1">
-              {categoryError}
-            </div>
-          )}
+          {categoryError && <div className="text-xs text-red-600 mt-1">{categoryError}</div>}
 
           <label className="text-sm text-muted-foreground">Estado</label>
           <select

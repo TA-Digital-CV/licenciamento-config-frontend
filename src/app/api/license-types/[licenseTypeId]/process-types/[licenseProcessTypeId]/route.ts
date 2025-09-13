@@ -7,11 +7,12 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { licenseTypeId: string; licenseProcessTypeId: string } }
+  { params }: { params: Promise<{ licenseTypeId: string; licenseProcessTypeId: string }> },
 ) {
   try {
+    const { licenseTypeId, licenseProcessTypeId } = await params;
     const response = await apiClient.get<LicenseProcessTypeResponseDTO>(
-      `/license-types/${params.licenseTypeId}/process-types/${params.licenseProcessTypeId}`
+      `/license-types/${licenseTypeId}/process-types/${licenseProcessTypeId}`,
     );
 
     return NextResponse.json(response);
@@ -23,9 +24,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { licenseTypeId: string; licenseProcessTypeId: string } }
+  { params }: { params: Promise<{ licenseTypeId: string; licenseProcessTypeId: string }> },
 ) {
   try {
+    const { licenseTypeId, licenseProcessTypeId } = await params;
     const body: LicenseProcessTypeRequestDTO = await request.json();
 
     if (!body.processName || !body.processCode) {
@@ -38,12 +40,12 @@ export async function PUT(
     // Add licenseTypeId from URL params to the body
     const requestBody = {
       ...body,
-      licenseTypeId: params.licenseTypeId,
+      licenseTypeId: licenseTypeId,
     };
 
     const response = await apiClient.put<LicenseProcessTypeResponseDTO>(
-      `/license-types/${params.licenseTypeId}/process-types/${params.licenseProcessTypeId}`,
-      requestBody
+      `/license-types/${licenseTypeId}/process-types/${licenseProcessTypeId}`,
+      requestBody,
     );
 
     return NextResponse.json(response);
@@ -55,11 +57,12 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { licenseTypeId: string; licenseProcessTypeId: string } }
+  { params }: { params: Promise<{ licenseTypeId: string; licenseProcessTypeId: string }> },
 ) {
   try {
+    const { licenseTypeId, licenseProcessTypeId } = await params;
     await apiClient.delete(
-      `/license-types/${params.licenseTypeId}/process-types/${params.licenseProcessTypeId}`
+      `/license-types/${licenseTypeId}/process-types/${licenseProcessTypeId}`,
     );
 
     return NextResponse.json({ message: 'License process type deleted successfully' });

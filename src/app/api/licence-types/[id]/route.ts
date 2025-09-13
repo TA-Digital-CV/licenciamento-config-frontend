@@ -6,9 +6,9 @@ import {
 } from '../../../(myapp)/types/licence-types.types';
 
 // GET /api/licence-types/[id]
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const response = await apiClient.get<LicenseTypeResponseDTO>(`/license-types/${id}`);
 
     // Transform backend response to match frontend expectations
@@ -44,13 +44,13 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/licence-types/[id]
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
-    // Check if this is an enable/disable operation
-    if (body.action === 'enable') {
+    // Check if this is an activate/deactivate operation
+    if (body.action === 'activate') {
       await apiClient.patch(`/license-types/${id}/ativar`);
       // Buscar o tipo de licença atualizado
       const response = await apiClient.get<LicenseTypeResponseDTO>(`/license-types/${id}`);
@@ -68,7 +68,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       });
     }
 
-    if (body.action === 'disable') {
+    if (body.action === 'deactivate') {
       await apiClient.patch(`/license-types/${id}/desativar`);
       // Buscar o tipo de licença atualizado
       const response = await apiClient.get<LicenseTypeResponseDTO>(`/license-types/${id}`);

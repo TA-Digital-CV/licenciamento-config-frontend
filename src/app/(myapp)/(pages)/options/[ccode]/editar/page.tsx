@@ -7,7 +7,11 @@ import { use } from 'react';
 import Link from 'next/link';
 import Optionform from '@/components/optionform';
 
-export default function PageEditaroptionByCodeComponent({ params }: { params: Promise<{ ccode: string }> }) {
+export default function PageEditaroptionByCodeComponent({
+  params,
+}: {
+  params: Promise<{ ccode: string }>;
+}) {
   const { ccode } = use(params);
   return (
     <div className="p-4">
